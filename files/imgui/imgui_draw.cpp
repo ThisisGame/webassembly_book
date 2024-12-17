@@ -2372,8 +2372,8 @@ ImFontConfig::ImFontConfig()
 {
     memset(this, 0, sizeof(*this));
     FontDataOwnedByAtlas = true;
-    OversampleH = 2;
-    OversampleV = 1;
+    OversampleH = 3;
+    OversampleV = 3;
     GlyphMaxAdvanceX = FLT_MAX;
     RasterizerMultiply = 1.0f;
     RasterizerDensity = 1.0f;

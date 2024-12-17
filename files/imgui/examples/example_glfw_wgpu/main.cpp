@@ -121,16 +121,17 @@ int main(int, char**)
     // - Emscripten allows preloading a file or folder to be accessible at runtime. See Makefile for details.
     // io.Fonts->AddFontDefault();
 #ifndef IMGUI_DISABLE_FILE_FUNCTIONS
-    printf("Loading fonts...\n");
+    // printf("Loading fonts...\n");
     // io.Fonts->AddFontFromFileTTF("fonts/segoeui.ttf", 18.0f);
     // io.Fonts->AddFontFromFileTTF("fonts/DroidSans.ttf", 16.0f);
     // io.Fonts->AddFontFromFileTTF("fonts/Roboto-Medium.ttf", 16.0f);
     // io.Fonts->AddFontFromFileTTF("fonts/Cousine-Regular.ttf", 15.0f);
     // io.Fonts->AddFontFromFileTTF("fonts/ProggyTiny.ttf", 10.0f);
     // ImFont* font = io.Fonts->AddFontFromFileTTF("fonts/ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
-    ImFont* font = io.Fonts->AddFontFromFileTTF("fonts/JetBrainsMonoNL-Light.ttf", 20.0f);
-    printf("Loaded fonts\n");
-    IM_ASSERT(font != nullptr);
+    // io.Fonts->AddFontFromFileTTF("fonts/JetBrainsMonoNL-Light.ttf", 20.0f);
+    // io.Fonts->AddFontFromFileTTF("fonts/xkcd-script.ttf", 20.0f);
+    // printf("Loaded fonts\n");
+    // IM_ASSERT(font != nullptr);
 #endif
 
     // Our state

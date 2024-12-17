@@ -111,6 +111,10 @@ int main(int, char**)
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
     //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
     //IM_ASSERT(font != nullptr);
+    // printf("Loading fonts...\n");
+    // io.Fonts->AddFontFromFileTTF("fonts/JetBrainsMonoNL-Light.ttf", 20.0f);
+    // io.Fonts->AddFontFromFileTTF("fonts/xkcd-script.ttf", 20.0f);
+    // printf("Loaded fonts\n");
 
     // Our state
     bool show_demo_window = true;
