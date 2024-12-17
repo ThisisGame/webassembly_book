@@ -85,3 +85,28 @@ Now listening at http://0.0.0.0:7000/
 会自动打开浏览器访问`http://localhost:7000/hello.html`，F12打开浏览器控制台，可以看到输出了`hello world!`。
 
 ![](../../imgs/install/running.jpg)
+
+上面的`hello.html`是自己写的超简单的，也可以用下面的命令，让emsdk自动生成一个html。
+
+```c++
+F:\webassembly_book\files\install>em++ hello.cpp -o hellohtml.html
+```
+
+这样就得到了`hellohtml.html`  `hellohtml.js`  `hellohtml.wasm` 全套文件。
+
+启动http服务器：
+
+```
+F:\webassembly_book\files\install>emrun hellohtml.html --port 7000
+Now listening at http://0.0.0.0:7000/
+```
+
+是一个比较完善的网页，带了控制台可以显示输出。
+
+![](../../imgs/install/beatu_web.jpg)
+
+
+
+
+
+
