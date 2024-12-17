@@ -2294,6 +2294,7 @@ ImFileHandle ImFileOpen(const char* filename, const char* mode)
     ::MultiByteToWideChar(CP_UTF8, 0, mode, -1, mode_wbuf, mode_wsize);
     return ::_wfopen(filename_wbuf, mode_wbuf);
 #else
+    printf("ImFileOpen: fopen(\"%s\", \"%s\")\n", filename, mode);
     return fopen(filename, mode);
 #endif
 }
@@ -2316,7 +2317,10 @@ void*   ImFileLoadToMemory(const char* filename, const char* mode, size_t* out_f
 
     ImFileHandle f;
     if ((f = ImFileOpen(filename, mode)) == NULL)
+    {
+        printf("ImFileLoadToMemory: fopen(\"%s\", \"%s\") failed\n", filename, mode);
         return NULL;
+    }
 
     size_t file_size = (size_t)ImFileGetSize(f);
     if (file_size == (size_t)-1)
