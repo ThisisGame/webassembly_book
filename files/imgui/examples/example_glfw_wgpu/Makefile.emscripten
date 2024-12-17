@@ -20,7 +20,51 @@ EXE = $(WEB_DIR)/index.js
 IMGUI_DIR = ../..
 SOURCES = main.cpp
 SOURCES += $(IMGUI_DIR)/imgui.cpp $(IMGUI_DIR)/imgui_demo.cpp $(IMGUI_DIR)/imgui_draw.cpp $(IMGUI_DIR)/imgui_tables.cpp $(IMGUI_DIR)/imgui_widgets.cpp
-SOURCES += $(IMGUI_DIR)/backends/imgui_impl_glfw.cpp $(IMGUI_DIR)/backends/imgui_impl_wgpu.cpp
+SOURCES += $(IMGUI_DIR)/backends/imgui_impl_glfw.cpp $(IMGUI_DIR)/backends/imgui_impl_wgpu.cpp $(IMGUI_DIR)/misc/freetype/imgui_freetype.cpp
+
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/autofit/autofit.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/base/ftbase.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/base/ftbbox.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/base/ftbdf.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/base/ftbitmap.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/base/ftcid.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/base/ftfstype.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/base/ftgasp.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/base/ftglyph.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/base/ftgxval.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/base/ftinit.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/base/ftmm.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/base/ftotval.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/base/ftpatent.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/base/ftpfr.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/base/ftstroke.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/base/ftsynth.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/base/fttype1.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/base/ftwinfnt.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/bdf/bdf.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/bzip2/ftbzip2.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/cache/ftcache.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/cff/cff.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/cid/type1cid.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/gzip/ftgzip.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/lzw/ftlzw.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/pcf/pcf.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/pfr/pfr.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/psaux/psaux.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/pshinter/pshinter
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/psnames/psnames.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/raster/raster.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/sdf/sdf.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/sfnt/sfnt.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/smooth/smooth.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/truetype/truetype
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/type1/type1.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/type42/type42.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/winfonts/winfnt.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/base/ftsystem.c
+SOURCES += $(IMGUI_DIR)/misc/freetype/freetype/src/base/ftdebug.c
+
+
 OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
 UNAME_S := $(shell uname -s)
 CPPFLAGS =
@@ -56,7 +100,18 @@ endif
 ## FINAL BUILD FLAGS
 ##---------------------------------------------------------------------
 
-CPPFLAGS += -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends
+CPPFLAGS += -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends -I$(IMGUI_DIR)/misc/freetype
+
+CPPFLAGS += -I$(IMGUI_DIR)/misc/freetype/include
+CPPFLAGS += -I$(IMGUI_DIR)/misc/freetype/freetype
+CPPFLAGS += -I$(IMGUI_DIR)/misc/freetype/freetype/include
+CPPFLAGS += -I$(IMGUI_DIR)/misc/freetype/freetype/include/freetype
+CPPFLAGS += -I$(IMGUI_DIR)/misc/freetype/freetype/config
+CPPFLAGS += -I$(IMGUI_DIR)/misc/freetype/freetype/internal
+CPPFLAGS += -I$(IMGUI_DIR)/misc/freetype/freetype/src/autofit
+
+CPPFLAGS += -DFT2_BUILD_LIBRARY
+
 #CPPFLAGS += -g
 CPPFLAGS += -Wall -Wformat -Os $(EMS)
 #LDFLAGS += --shell-file shell_minimal.html
@@ -73,6 +128,13 @@ LDFLAGS += $(EMS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
 
 %.o:$(IMGUI_DIR)/backends/%.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
+
+%.o:$(IMGUI_DIR)/misc/freetype/%.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
+
+## FreeType编译规则
+%.o:$(IMGUI_DIR)/misc/freetype/freetype/src/*/%.c
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
 
 all: $(EXE)
