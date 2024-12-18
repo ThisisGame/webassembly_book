@@ -128,6 +128,7 @@ int main(int, char**)
     // io.Fonts->AddFontFromFileTTF("fonts/Cousine-Regular.ttf", 15.0f);
     // io.Fonts->AddFontFromFileTTF("fonts/ProggyTiny.ttf", 10.0f);
     // ImFont* font = io.Fonts->AddFontFromFileTTF("fonts/ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
+
     io.Fonts->AddFontFromFileTTF("fonts/JetBrainsMonoNL-Light.ttf", 20.0f);
     io.Fonts->AddFontFromFileTTF("fonts/xkcd-script.ttf", 20.0f);
     printf("Loaded fonts\n");
@@ -340,6 +341,7 @@ static bool InitWGPU(GLFWwindow* window)
 
 static void CreateSwapChain(int width, int height)
 {
+    printf("Creating swap chain %d x %d\n", width, height);
     if (wgpu_swap_chain)
         wgpuSwapChainRelease(wgpu_swap_chain);
     wgpu_swap_chain_width = width;

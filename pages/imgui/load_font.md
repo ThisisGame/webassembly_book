@@ -59,23 +59,22 @@ endif
     // - Read 'docs/FONTS.md' for more instructions and details.
     // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
     // - Emscripten allows preloading a file or folder to be accessible at runtime. See Makefile for details.
-    io.Fonts->AddFontDefault();
+    // io.Fonts->AddFontDefault();
 #ifndef IMGUI_DISABLE_FILE_FUNCTIONS
-    io.Fonts->AddFontFromFileTTF("fonts/segoeui.ttf", 18.0f);
-    io.Fonts->AddFontFromFileTTF("fonts/DroidSans.ttf", 16.0f);
-    io.Fonts->AddFontFromFileTTF("fonts/Roboto-Medium.ttf", 16.0f);
-    io.Fonts->AddFontFromFileTTF("fonts/Cousine-Regular.ttf", 15.0f);
-    io.Fonts->AddFontFromFileTTF("fonts/ProggyTiny.ttf", 10.0f);
-    ImFont* font = io.Fonts->AddFontFromFileTTF("fonts/ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
-    IM_ASSERT(font != nullptr);
+    printf("Loading fonts...\n");
+    // io.Fonts->AddFontFromFileTTF("fonts/segoeui.ttf", 18.0f);
+    // io.Fonts->AddFontFromFileTTF("fonts/DroidSans.ttf", 16.0f);
+    // io.Fonts->AddFontFromFileTTF("fonts/Roboto-Medium.ttf", 16.0f);
+    // io.Fonts->AddFontFromFileTTF("fonts/Cousine-Regular.ttf", 15.0f);
+    // io.Fonts->AddFontFromFileTTF("fonts/ProggyTiny.ttf", 10.0f);
+    // ImFont* font = io.Fonts->AddFontFromFileTTF("fonts/ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
+
+    io.Fonts->AddFontFromFileTTF("fonts/JetBrainsMonoNL-Light.ttf", 20.0f);
+    io.Fonts->AddFontFromFileTTF("fonts/xkcd-script.ttf", 20.0f);
+    printf("Loaded fonts\n");
+    // IM_ASSERT(font != nullptr);
 #endif
 ```
-
-<font color=red>然后删除web目录中的index.wasm  和 index.js</font>
-<font color=red>然后删除web目录中的index.wasm  和 index.js</font>
-<font color=red>然后删除web目录中的index.wasm  和 index.js</font>
-
-一定要删除，不然再次编译也不会生效。
 
 再编译
 
@@ -88,6 +87,8 @@ cache:INFO: generating system asset: symbol_lists/df5494f4a0f73bd6293585a5007795
 cache:INFO:  - ok
 Build complete for web/index.js
 ```
+
+有时候编译不会生效，可以删除web目录中的index.wasm  和 index.js再编译。
 
 从编译log可以看到，相比之前的，多了`--preload-file ../../misc/fonts@/fonts`。
 
@@ -122,4 +123,6 @@ Serving HTTP on :: port 7000 (http://[::]:7000/) ...
 
 ![](../../imgs/imgui/load_font/load_index_data.jpg)
 
+
+![](../../imgs/imgui/load_font/custom_font.jpg)
 

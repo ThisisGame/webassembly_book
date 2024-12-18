@@ -20,7 +20,7 @@ EXE = $(WEB_DIR)/index.js
 IMGUI_DIR = ../..
 SOURCES = main.cpp
 SOURCES += $(IMGUI_DIR)/imgui.cpp $(IMGUI_DIR)/imgui_demo.cpp $(IMGUI_DIR)/imgui_draw.cpp $(IMGUI_DIR)/imgui_tables.cpp $(IMGUI_DIR)/imgui_widgets.cpp
-SOURCES += $(IMGUI_DIR)/backends/imgui_impl_glfw.cpp $(IMGUI_DIR)/backends/imgui_impl_wgpu.cpp
+SOURCES += $(IMGUI_DIR)/backends/imgui_impl_glfw.cpp $(IMGUI_DIR)/backends/imgui_impl_opengl3.cpp
 
 SOURCES += $(IMGUI_DIR)/misc/freetype/imgui_freetype.cpp
 
@@ -79,7 +79,8 @@ EMS =
 
 # ("EMS" options gets added to both CPPFLAGS and LDFLAGS, whereas some options are for linker only)
 EMS += -s DISABLE_EXCEPTION_CATCHING=1
-LDFLAGS += -s USE_GLFW=3 -s USE_WEBGPU=1
+LDFLAGS += -lGL
+LDFLAGS += -s USE_WEBGL2=1 -s USE_GLFW=3 -s FULL_ES3=1
 LDFLAGS += -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s NO_EXIT_RUNTIME=0 -s ASSERTIONS=1
 
 # Build as single file (binary text encoded in .html file)
