@@ -11,6 +11,9 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include <stdio.h>
+#include <iostream>
+#include <string>
+#include <vector>
 #define GL_SILENCE_DEPRECATION
 #if defined(IMGUI_IMPL_OPENGL_ES2)
 #include <GLES2/gl2.h>
@@ -27,12 +30,44 @@
 // This example can also compile and run with Emscripten! See 'Makefile.emscripten' for details.
 #ifdef __EMSCRIPTEN__
 #include "../libs/emscripten/emscripten_mainloop_stub.h"
+#include <emscripten/emscripten.h>
+#include <emscripten/fetch.h>
 #endif
 
 static void glfw_error_callback(int error, const char* description)
 {
     fprintf(stderr, "GLFW Error %d: %s\n", error, description);
 }
+
+static bool fetch_file_finished = true;//是否下载完成
+
+#ifdef __EMSCRIPTEN__
+// Function to make the HTTP request
+void fetchFileAndPassToWasm(const char* url) {
+    std::cout << "fetchFileAndPassToWasm: " << url << std::endl;
+    if (fetch_file_finished==false) {
+        std::cerr << "Previous fetch is still in progress\n";
+        return;
+    }
+    fetch_file_finished = false;
+    
+    // Call the JavaScript function to download the file
+    EM_ASM_ARGS({
+        downloadFile(UTF8ToString($0));
+    }, url);
+}
+
+// Function to process file bytes in C++
+extern "C" {
+    EMSCRIPTEN_KEEPALIVE
+    void processFileBytes(const uint8_t* data, int length) {
+        std::cout << "processFileBytes: " << length << " bytes\n";
+        fetch_file_finished = true;
+        std::vector<uint8_t> fileBytes(data, data + length);
+        // Process the file bytes as needed
+    }
+}
+#endif
 
 // Main code
 int main(int, char**)
@@ -96,23 +131,8 @@ int main(int, char**)
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     // Load Fonts
-    // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
-    // - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
-    // - If the file cannot be loaded, the function will return a nullptr. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
-    // - The fonts will be rasterized at a given size (w/ oversampling) and stored into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which ImGui_ImplXXXX_NewFrame below will call.
-    // - Use '#define IMGUI_ENABLE_FREETYPE' in your imconfig file to use Freetype for higher quality font rendering.
-    // - Read 'docs/FONTS.md' for more instructions and details.
-    // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
-    // - Our Emscripten build process allows embedding fonts to be accessible at runtime from the "fonts/" folder. See Makefile.emscripten for details.
-    //io.Fonts->AddFontDefault();
-    //io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 18.0f);
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
-    //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
-    //IM_ASSERT(font != nullptr);
     printf("Loading fonts...\n");
-    // io.Fonts->AddFontFromFileTTF("fonts/JetBrainsMonoNL-Light.ttf", 20.0f);
+    io.Fonts->AddFontFromFileTTF("fonts/JetBrainsMonoNL-Light.ttf", 20.0f);
     io.Fonts->AddFontFromFileTTF("fonts/xkcd-script.ttf", 20.0f);
     printf("Loaded fonts\n");
 
@@ -131,11 +151,6 @@ int main(int, char**)
     while (!glfwWindowShouldClose(window))
 #endif
     {
-        // Poll and handle events (inputs, window resize, etc.)
-        // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
-        // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application, or clear/overwrite your copy of the mouse data.
-        // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application, or clear/overwrite your copy of the keyboard data.
-        // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
         glfwPollEvents();
         if (glfwGetWindowAttrib(window, GLFW_ICONIFIED) != 0)
         {
@@ -184,6 +199,17 @@ int main(int, char**)
                 show_another_window = false;
             ImGui::End();
         }
+
+        //按钮点击打开文件
+        ImGui::Begin("Open File");
+        {
+            if(ImGui::Button("Open File")) {
+                #ifdef __EMSCRIPTEN__
+                fetchFileAndPassToWasm("http://localhost:7000/ue.log");
+                #endif
+            }
+        }
+        ImGui::End();
 
         // Rendering
         ImGui::Render();

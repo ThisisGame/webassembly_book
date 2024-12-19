@@ -33,7 +33,7 @@ EMS =
 
 # ("EMS" options gets added to both CPPFLAGS and LDFLAGS, whereas some options are for linker only)
 EMS += -s DISABLE_EXCEPTION_CATCHING=1
-LDFLAGS += -s USE_GLFW=3 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s NO_EXIT_RUNTIME=0 -s ASSERTIONS=1
+LDFLAGS += -s USE_GLFW=3 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s NO_EXIT_RUNTIME=0 -s ASSERTIONS=1 -s "EXPORTED_RUNTIME_METHODS=['ccall', 'cwrap']" -s STACK_SIZE=1gb
 
 # Build as single file (binary text encoded in .html file)
 #LDFLAGS += -sSINGLE_FILE
@@ -62,7 +62,8 @@ endif
 CPPFLAGS += -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends
 #CPPFLAGS += -g
 CPPFLAGS += -Wall -Wformat -Os $(EMS)
-LDFLAGS += --shell-file ../libs/emscripten/shell_minimal.html
+#LDFLAGS += --shell-file ../libs/emscripten/shell_minimal.html
+LDFLAGS += --shell-file ./index.html
 LDFLAGS += $(EMS)
 
 ##---------------------------------------------------------------------
@@ -88,7 +89,7 @@ serve: all
 	python3 -m http.server -d $(WEB_DIR)
 
 $(EXE): $(OBJS) $(WEB_DIR)
-	$(CXX) -o $@ $(OBJS) $(LDFLAGS)
+	$(CXX) -o $@ $(OBJS) $(LDFLAGS) -s EXPORTED_FUNCTIONS="['_main','_processFileBytes']"
 
 clean:
 	rm -rf $(OBJS) $(WEB_DIR)
