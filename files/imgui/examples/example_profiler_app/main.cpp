@@ -63,8 +63,25 @@ extern "C" {
     void processFileBytes(const uint8_t* data, int length) {
         std::cout << "processFileBytes: " << length << " bytes\n";
         fetch_file_finished = true;
-        std::vector<uint8_t> fileBytes(data, data + length);
-        // Process the file bytes as needed
+        
+        // data是一个文本，以'\n'分割
+        std::string str((const char*)data, length);
+        std::vector<std::string> lines;
+        std::string::size_type pos1, pos2;
+        pos2 = str.find('\n');
+        pos1 = 0;
+        while(std::string::npos != pos2) {
+            lines.push_back(str.substr(pos1, pos2-pos1));
+            
+            pos1 = pos2 + 1;
+            pos2 = str.find('\n', pos1);
+        }
+        if(pos1 != str.length())
+            lines.push_back(str.substr(pos1));
+        
+        for(auto& line : lines) {
+            std::cout << line << std::endl;
+        }
     }
 }
 #endif
