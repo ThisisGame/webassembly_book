@@ -1,0 +1,22 @@
+﻿# 设置imgui所在目录
+set(IMGUI_SOURCE_DIR ../..)
+
+#头文件目录
+include_directories("${IMGUI_SOURCE_DIR}/")
+include_directories("${IMGUI_SOURCE_DIR}/backends")
+
+#源文件
+set(imgui_src ${IMGUI_SOURCE_DIR}/imgui.cpp
+        ${IMGUI_SOURCE_DIR}/imgui_demo.cpp
+        ${IMGUI_SOURCE_DIR}/imgui_draw.cpp
+        ${IMGUI_SOURCE_DIR}/imgui_tables.cpp
+        ${IMGUI_SOURCE_DIR}/imgui_widgets.cpp
+        )
+
+if (UNIX)
+
+elseif (WIN32)
+    list(APPEND imgui_src "${IMGUI_SOURCE_DIR}/backends/imgui_impl_glfw.cpp" "${IMGUI_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp")
+else ()
+
+endif ()
