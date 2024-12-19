@@ -15,6 +15,9 @@
 #include <sstream>
 #include <iomanip>
 #include "GLFW/glfw3.h"
+#ifndef __EMSCRIPTEN__
+#include "imgui-filebrowser/imfilebrowser.h"
+#endif
 
 
 class LogTrackNetDataOneRPC{
@@ -158,10 +161,16 @@ public:
 class App {
 public:
     void Init(GLFWwindow* window);
+    void Update(int window_width, int window_height);
     void ResetData();
     void ParseLogFile(const std::string& file_path);
     void ParseLogLines(const std::vector<std::string>& lines);
 private:
+#ifndef __EMSCRIPTEN__
+    // create a file browser instance
+    ImGui::FileBrowser file_browser;
+#endif
+
     LogTrackNetData* log_track_net_data_= nullptr;//网络数据
     std::vector<std::string> connection_names;//连接名字
     std::map<std::string, std::vector<float>> connection_queued_bits_data_map;//连接名字和带宽余量数据
@@ -183,6 +192,7 @@ private:
     std::map<std::string,std::vector<std::string>> connection_rpc_bits_write_data_show_tips_map;//RPCBitsWrite柱状图 连接名字和显示的提示
 
     std::string hover_tip_;//鼠标悬停的提示
+
 
 public:
     static App* GetInstance();

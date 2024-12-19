@@ -54,6 +54,11 @@ extern "C" {
         std::cout << "processFileBytes: " << length << " bytes\n";
         fetch_file_finished = true;
 
+        if(length==0){
+            std::cerr << "file length is 0\n";
+            return;
+        }
+
         // data是一个文本，以'\n'分割
         std::string str((const char*)data, length);
         std::vector<std::string> lines;
@@ -79,162 +84,120 @@ extern "C" {
 App* App::instance_=nullptr;
 
 void App::Init(GLFWwindow* window) {
-    ImGuiIO& io = ImGui::GetIO();
-
-    // Our state
-    bool show_demo_window = true;
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
-// Main loop
 #ifdef __EMSCRIPTEN__
-    // For an Emscripten build we are disabling file-system access, so let's not attempt to do a fopen() of the imgui.ini file.
-    // You may manually call LoadIniSettingsFromMemory() to load settings from your own storage.
-    io.IniFilename = nullptr;
-    EMSCRIPTEN_MAINLOOP_BEGIN
+    // Call downloadFile after main has run
+    fetch_file_finished = false;
+    emscripten_run_script("downloadFileFromUrlParam()");//从url参数中下载文件，例如http://localhost:7000/index.html?logFileUrl=http://localhost:7000/ue.log
 #else
-    // create a file browser instance
-    ImGui::FileBrowser file_browser;
     // (optional) set browser properties
     file_browser.SetTitle("title");
     file_browser.SetTypeFilters({".log" });
-
-    while (!glfwWindowShouldClose(window))
 #endif
+}
+
+
+void App::Update(int window_width, int window_height) {
+    // 1. 选择文件
     {
-        glfwPollEvents();
-        if (glfwGetWindowAttrib(window, GLFW_ICONIFIED) != 0)
-        {
-            ImGui_ImplGlfw_Sleep(10);
-            continue;
-        }
-
-        // Start the Dear ImGui frame
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-
-        // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-        if (show_demo_window) {
-            ImGui::ShowDemoWindow(&show_demo_window);
-        }
-
-
-        // 2. 选择文件
-        {
 #ifdef __EMSCRIPTEN__
-            //按钮点击打开文件
-            ImGui::Begin("Open File");
-            {
-                if(fetch_file_finished){
-                    if(ImGui::Button("Open File")) {
-                        fetchFileAndPassToWasm("http://localhost:7000/ue.log");
-                    }
-                }else{
-                    ImGui::Text("Downloading...");
-                }
-            }
-            ImGui::End();
-#else
-            if(ImGui::Begin("SelectFileWindow")){
-                // open file dialog when user clicks this button
-                if(ImGui::Button("SelectFile")){
-                    file_browser.Open();
-                }
-            }
-            ImGui::End();
-            file_browser.Display();
-
-            if(file_browser.HasSelected())
-            {
-                std::cout << "Selected filename" << file_browser.GetSelected().string() << std::endl;
-
-                ParseLogFile(file_browser.GetSelected().string());
-
-                file_browser.ClearSelected();
-            }
-#endif
-        }
-
-        // 3. 性能分析窗口
+        //按钮点击打开文件
+        ImGui::Begin("Open File");
         {
-            ImGui::Begin("ue net profiler");
-            {
-                //先创建一个Tips窗口，鼠标悬浮到柱形图时刷新这个窗口
-                ImGui::Begin("Tooltip");
-                {
-                    ImGui::TextUnformatted(hover_tip_.c_str());
+            if(fetch_file_finished){
+                if(ImGui::Button("Open File")) {
+                    fetchFileAndPassToWasm("http://localhost:7000/ue.log");
                 }
-                ImGui::End();
+            }else{
+                ImGui::Text("Downloading...");
+            }
+        }
+        ImGui::End();
+#else
+        if(ImGui::Begin("SelectFileWindow")){
+            // open file dialog when user clicks this button
+            if(ImGui::Button("SelectFile")){
+                file_browser.Open();
+            }
+        }
+        ImGui::End();
+        file_browser.Display();
 
-                for(auto& key_value_pair:connection_queued_bits_data_map)
+        if(file_browser.HasSelected())
+        {
+            std::cout << "Selected filename" << file_browser.GetSelected().string() << std::endl;
+
+            ParseLogFile(file_browser.GetSelected().string());
+
+            file_browser.ClearSelected();
+        }
+#endif
+    }
+
+    // 2. 性能分析窗口
+    {
+        ImGui::SetNextWindowSize(ImVec2(window_width-100, 300), ImGuiCond_FirstUseEver);
+        ImGui::Begin("ue net profiler");
+        {
+            //先创建一个Tips窗口，鼠标悬浮到柱形图时刷新这个窗口
+            ImGui::SetNextWindowSize(ImVec2(200, window_height-100), ImGuiCond_FirstUseEver);
+            ImGui::Begin("Tooltip");
+            {
+                ImGui::TextUnformatted(hover_tip_.c_str());
+            }
+            ImGui::End();
+
+            for(auto& key_value_pair:connection_queued_bits_data_map)
+            {
+                //显示Connection名字
+                ImGui::Text(key_value_pair.first.c_str());
+
+                //显示Connection的带宽余量
+                ImGui::BeginChild(key_value_pair.first.c_str(),ImVec2(0, 120*4),true,ImGuiWindowFlags_AlwaysHorizontalScrollbar);
                 {
-                    //显示Connection名字
-                    ImGui::Text(key_value_pair.first.c_str());
+                    static float queued_bits_middle_value=0.f;
+                    ImGui::SliderFloat("middle value", &queued_bits_middle_value, min_queued_bits, max_queued_bits);
 
-                    //显示Connection的带宽余量
-                    ImGui::BeginChild(key_value_pair.first.c_str(),ImVec2(0, 120*4),true,ImGuiWindowFlags_AlwaysHorizontalScrollbar);
-                    {
-                        static float queued_bits_middle_value=0.f;
-                        ImGui::SliderFloat("middle value", &queued_bits_middle_value, min_queued_bits, max_queued_bits);
+                    //绘制QueuedBits曲线
+                    ImGui::Text("QueuedBits");
+                    float window_width = key_value_pair.second.size() * 10;
+                    ImGui::BeginChild("##QueuedBits PlotLines", ImVec2(window_width, 80.0f));
+                    ImGui::PlotLines("##QueuedBits PlotLines", key_value_pair.second.data(), key_value_pair.second.size(),0,NULL,min_queued_bits,max_queued_bits,ImVec2(window_width,80.0f));
+                    ImGui::EndChild();
 
-                        //绘制QueuedBits曲线
-                        ImGui::Text("QueuedBits");
-                        float window_width = key_value_pair.second.size() * 10;
-                        ImGui::BeginChild("##QueuedBits PlotLines", ImVec2(window_width, 80.0f));
-                        ImGui::PlotLines("##QueuedBits PlotLines", key_value_pair.second.data(), key_value_pair.second.size(),0,NULL,min_queued_bits,max_queued_bits,ImVec2(window_width,80.0f));
+                    //绘制QueuedBits柱状图
+                    ImGui::Text("QueuedBits");
+                    ImGui::BeginChild("##QueuedBits PlotHistogram", ImVec2(window_width, 80.0f));
+                    ImGui::PlotHistogramWithColor("##QueuedBits PlotHistogram", key_value_pair.second.data(), key_value_pair.second.size(), 0, NULL, min_queued_bits, max_queued_bits, ImVec2(window_width, 80.0f), sizeof(float), queued_bits_middle_value, ImGui::GetColorU32(ImVec4(1,0,0,1)), ImGui::GetColorU32(ImVec4(0,1,0,1)), connection_queued_bits_data_show_tips_map[key_value_pair.first],hover_tip_);
+                    ImGui::EndChild();
+
+                    //绘制属性同步BitsWrite柱状图
+                    ImGui::Text("ReplicateActor BitsWrite");
+                    std::vector<float>& bits_write_data=connection_replicate_actor_bits_write_data_map[key_value_pair.first];
+                    //按下l键时，切换到详细提示
+                    ImGuiIO& io = ImGui::GetIO();
+                    if(ImGui::IsKeyDown(ImGuiKey_L)){
+                        ImGui::BeginChild("##ReplicateActor PlotHistogram Details", ImVec2(window_width, 80.0f));
+                        ImGui::PlotHistogramWithColor("##ReplicateActor PlotHistogram Details", bits_write_data.data(), bits_write_data.size(), 0, NULL, min_replicate_actor_bits_write, max_replicate_actor_bits_write, ImVec2(window_width, 80.0f), sizeof(float), 0, ImGui::GetColorU32(ImVec4(1, 0, 0, 1)), ImGui::GetColorU32(ImVec4(0, 1, 0, 1)), connection_replicate_actor_bits_write_data_show_tips_map[key_value_pair.first],hover_tip_);
                         ImGui::EndChild();
-
-                        //绘制QueuedBits柱状图
-                        ImGui::Text("QueuedBits");
-                        ImGui::BeginChild("##QueuedBits PlotHistogram", ImVec2(window_width, 80.0f));
-                        ImGui::PlotHistogramWithColor("##QueuedBits PlotHistogram", key_value_pair.second.data(), key_value_pair.second.size(), 0, NULL, min_queued_bits, max_queued_bits, ImVec2(window_width, 80.0f), sizeof(float), queued_bits_middle_value, ImGui::GetColorU32(ImVec4(1,0,0,1)), ImGui::GetColorU32(ImVec4(0,1,0,1)), connection_queued_bits_data_show_tips_map[key_value_pair.first],hover_tip_);
-                        ImGui::EndChild();
-
-                        //绘制属性同步BitsWrite柱状图
-                        ImGui::Text("ReplicateActor BitsWrite");
-                        std::vector<float>& bits_write_data=connection_replicate_actor_bits_write_data_map[key_value_pair.first];
-                        //按下l键时，切换到详细提示
-                        ImGuiIO& io = ImGui::GetIO();
-                        if(ImGui::IsKeyDown(ImGuiKey_L)){
-                            ImGui::BeginChild("##ReplicateActor PlotHistogram Details", ImVec2(window_width, 80.0f));
-                            ImGui::PlotHistogramWithColor("##ReplicateActor PlotHistogram Details", bits_write_data.data(), bits_write_data.size(), 0, NULL, min_replicate_actor_bits_write, max_replicate_actor_bits_write, ImVec2(window_width, 80.0f), sizeof(float), 0, ImGui::GetColorU32(ImVec4(1, 0, 0, 1)), ImGui::GetColorU32(ImVec4(0, 1, 0, 1)), connection_replicate_actor_bits_write_data_show_tips_map[key_value_pair.first],hover_tip_);
-                            ImGui::EndChild();
-                        }else{
-                            ImGui::BeginChild("##ReplicateActor PlotHistogram", ImVec2(window_width, 80.0f));
-                            ImGui::PlotHistogramWithColor("##ReplicateActor PlotHistogram", bits_write_data.data(), bits_write_data.size(), 0, NULL, min_replicate_actor_bits_write, max_replicate_actor_bits_write, ImVec2(window_width, 80.0f), sizeof(float), 0, ImGui::GetColorU32(ImVec4(1, 0, 0, 1)), ImGui::GetColorU32(ImVec4(0, 1, 0, 1)), connection_replicate_actor_bits_write_data_short_tips_map[key_value_pair.first],hover_tip_);
-                            ImGui::EndChild();
-                        }
-
-
-                        //绘制RPC BitsWrite柱状图
-                        ImGui::Text("RPC BitsWrite");
-                        std::vector<float>& rpc_bits_write_data=connection_rpc_bits_write_data_map[key_value_pair.first];
-                        ImGui::BeginChild("##RPC PlotHistogram", ImVec2(window_width, 80.0f));
-                        ImGui::PlotHistogramWithColor("##RPC PlotHistogram", rpc_bits_write_data.data(), rpc_bits_write_data.size(), 0, NULL, min_rpc_bits_write, max_rpc_bits_write, ImVec2(window_width, 80.0f), sizeof(float), 0, ImGui::GetColorU32(ImVec4(1, 0, 0, 1)), ImGui::GetColorU32(ImVec4(0, 1, 0, 1)), connection_rpc_bits_write_data_show_tips_map[key_value_pair.first],hover_tip_);
+                    }else{
+                        ImGui::BeginChild("##ReplicateActor PlotHistogram", ImVec2(window_width, 80.0f));
+                        ImGui::PlotHistogramWithColor("##ReplicateActor PlotHistogram", bits_write_data.data(), bits_write_data.size(), 0, NULL, min_replicate_actor_bits_write, max_replicate_actor_bits_write, ImVec2(window_width, 80.0f), sizeof(float), 0, ImGui::GetColorU32(ImVec4(1, 0, 0, 1)), ImGui::GetColorU32(ImVec4(0, 1, 0, 1)), connection_replicate_actor_bits_write_data_short_tips_map[key_value_pair.first],hover_tip_);
                         ImGui::EndChild();
                     }
+
+
+                    //绘制RPC BitsWrite柱状图
+                    ImGui::Text("RPC BitsWrite");
+                    std::vector<float>& rpc_bits_write_data=connection_rpc_bits_write_data_map[key_value_pair.first];
+                    ImGui::BeginChild("##RPC PlotHistogram", ImVec2(window_width, 80.0f));
+                    ImGui::PlotHistogramWithColor("##RPC PlotHistogram", rpc_bits_write_data.data(), rpc_bits_write_data.size(), 0, NULL, min_rpc_bits_write, max_rpc_bits_write, ImVec2(window_width, 80.0f), sizeof(float), 0, ImGui::GetColorU32(ImVec4(1, 0, 0, 1)), ImGui::GetColorU32(ImVec4(0, 1, 0, 1)), connection_rpc_bits_write_data_show_tips_map[key_value_pair.first],hover_tip_);
                     ImGui::EndChild();
                 }
+                ImGui::EndChild();
             }
-            ImGui::End();
         }
-
-        // Rendering
-        ImGui::Render();
-        int display_w, display_h;
-        glfwGetFramebufferSize(window, &display_w, &display_h);
-        glViewport(0, 0, display_w, display_h);
-        glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
-        glClear(GL_COLOR_BUFFER_BIT);
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        glfwSwapBuffers(window);
+        ImGui::End();
     }
-#ifdef __EMSCRIPTEN__
-    EMSCRIPTEN_MAINLOOP_END;
-#endif
 }
 
 void App::ResetData() {
@@ -770,5 +733,6 @@ App *App::GetInstance() {
     }
     return instance_;
 }
+
 
 

@@ -35,6 +35,26 @@
 #include <emscripten/fetch.h>
 #endif
 
+#ifdef __EMSCRIPTEN__
+int g_width;
+int g_height;
+
+// Function used by c++ to get the size of the html canvas
+EM_JS(int, canvas_get_width, (), {
+  return Module.canvas.width;
+});
+
+// Function used by c++ to get the size of the html canvas
+EM_JS(int, canvas_get_height, (), {
+  return Module.canvas.height;
+});
+
+// Function called by javascript
+EM_JS(void, resizeCanvas, (), {
+  js_resizeCanvas();
+});
+#endif
+
 static void glfw_error_callback(int error, const char* description)
 {
     fprintf(stderr, "GLFW Error %d: %s\n", error, description);
@@ -44,6 +64,8 @@ static void glfw_error_callback(int error, const char* description)
 // Main code
 int main(int, char**)
 {
+    std::cout << "c++ main!" << std::endl;
+
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
         return 1;
@@ -108,9 +130,77 @@ int main(int, char**)
     io.Fonts->AddFontFromFileTTF("fonts/xkcd-script.ttf", 20.0f);
     printf("Loaded fonts\n");
 
+#ifdef __EMSCRIPTEN__
+    resizeCanvas();
+#endif
 
 
     App::GetInstance()->Init(window);
+
+    // Our state
+    bool show_demo_window = true;
+    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+// Main loop
+#ifdef __EMSCRIPTEN__
+    // For an Emscripten build we are disabling file-system access, so let's not attempt to do a fopen() of the imgui.ini file.
+    // You may manually call LoadIniSettingsFromMemory() to load settings from your own storage.
+    io.IniFilename = nullptr;
+    EMSCRIPTEN_MAINLOOP_BEGIN
+#else
+    while (!glfwWindowShouldClose(window))
+#endif
+    {
+#ifdef __EMSCRIPTEN__
+        int canvas_width = canvas_get_width();
+        int canvas_height = canvas_get_height();
+
+        if (canvas_width != g_width || canvas_height != g_height)
+        {
+            g_width = canvas_width;
+            g_height = canvas_height;
+
+            glfwSetWindowSize(window, g_width, g_height);
+            ImGui::SetCurrentContext(ImGui::GetCurrentContext());
+        }
+#endif
+        glfwPollEvents();
+        if (glfwGetWindowAttrib(window, GLFW_ICONIFIED) != 0)
+        {
+            ImGui_ImplGlfw_Sleep(10);
+            continue;
+        }
+
+        // Start the Dear ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+        // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
+        if (show_demo_window) {
+            ImGui::ShowDemoWindow(&show_demo_window);
+        }
+
+        int width, height;
+        glfwGetWindowSize(window, &width, &height);
+        App::GetInstance()->Update(width, height);
+
+        // Rendering
+        ImGui::Render();
+        int display_w, display_h;
+        glfwGetFramebufferSize(window, &display_w, &display_h);
+        glViewport(0, 0, display_w, display_h);
+        glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
+        glClear(GL_COLOR_BUFFER_BIT);
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        glfwSwapBuffers(window);
+    }
+#ifdef __EMSCRIPTEN__
+    EMSCRIPTEN_MAINLOOP_END;
+#endif
 
     // Cleanup
     ImGui_ImplOpenGL3_Shutdown();
