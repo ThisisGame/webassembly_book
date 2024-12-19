@@ -16,12 +16,15 @@ file(COPY "../../misc/fonts/" DESTINATION "./fonts/")
 
 #头文件目录
 include_directories("./")
+include_directories("../../misc/depends/")
 
 #这里使用GLOB_RECURSE会遍历子文件夹导致包含了cmake-build-debug\CMakeFiles\3.27.8\CompilerIdCXX\CMakeCXXCompilerId.cpp，导致main函数重复定义。
 # file(GLOB_RECURSE example_cpp ./*.cpp)
 file(GLOB example_cpp ./*.cpp)
 
-add_executable(${PROJECT_NAME} ${glfw_sources} ${imgui_src} ${example_cpp})
+add_executable(${PROJECT_NAME} ${glfw_sources} ${imgui_src} ${example_cpp}
+        app.cpp
+        app.h)
 
 if (MSVC)
     set_property(TARGET ${PROJECT_NAME} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
