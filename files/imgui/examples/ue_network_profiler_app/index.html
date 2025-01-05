@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en-us">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>imgui web</title>
+	<style>
+		body {
+			font-family: arial;
+			margin: 0;
+			padding: none;
+		}
+
+		.emscripten {
+			padding-right: 0;
+			margin-left: auto;
+			margin-right: auto;
+			display: block;
+		}
+
+		div.emscripten {
+			text-align: center;
+		}
+
+		div.emscripten_border {
+			border: none;
+		}
+
+		/* the canvas *must not* have any border or padding, or mouse coords will be wrong */
+		canvas.emscripten {
+			border: 0px none;
+			background-color: black;
+		}
+	</style>
+</head>
+
+<body>
+	<canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+	<script type='text/javascript'>
+		var Module = {
+			preRun: [],
+			postRun: [],
+			print: (function () {
+				return function (text) {
+					text = Array.prototype.slice.call(arguments).join(' ');
+					console.log(text);
+				};
+			})(),
+			printErr: function (text) {
+				text = Array.prototype.slice.call(arguments).join(' ');
+				console.error(text);
+			},
+			canvas: (function () {
+				var canvas = document.getElementById('canvas');
+				//canvas.addEventListener("webglcontextlost", function(e) { alert('FIXME: WebGL context lost, please reload the page'); e.preventDefault(); }, false);
+				return canvas;
+			})(),
+			setStatus: function (text) {
+				console.log("status: " + text);
+			},
+			monitorRunDependencies: function (left) {
+				// no run dependencies to log
+			}
+		};
+		window.onerror = function () {
+			console.log("onerror: " + event);
+		};
+
+		window.addEventListener('resize', js_resizeCanvas, false);
+		function js_resizeCanvas() {
+			document.getElementById('canvas').width = window.innerWidth;
+			document.getElementById('canvas').height = window.innerHeight;
+		}
+
+		function downloadFile(url) {
+			console.log('js Downloading file:', url);
+			return fetch(url)
+				.then(response => response.arrayBuffer())
+				.then(buffer => {
+					const byteArray = new Uint8Array(buffer);
+					Module.ccall('processFileBytes', 'void', ['array', 'number'], [byteArray, byteArray.length]);
+				});
+		}
+
+		console.log('js running');
+
+		// Function to get URL parameter by name
+        function getUrlParam(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+		function downloadFileFromUrlParam() {
+			// Get the log file URL from the URL parameter 'logFileUrl'
+			const logFileUrl = getUrlParam('logFileUrl');
+			console.log('downloadFileFromUrlParam,Log file URL:', logFileUrl);
+
+			// If the log file URL exists, call downloadFile
+			if (logFileUrl) {
+				downloadFile(logFileUrl);
+			} else {
+				console.error('Log file URL parameter is missing');
+				const byteArray = new Uint8Array(0);
+				Module.ccall('processFileBytes', 'void', ['array', 'number'], [byteArray, byteArray.length]);
+			}
+		}
+	</script>
+	{{{ SCRIPT }}}
+</body>
+
+</html>
