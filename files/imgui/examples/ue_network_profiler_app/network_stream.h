@@ -14,6 +14,8 @@
 #include <vector>
 #include "stream_header.h"
 
+class PartialNetworkStream;
+
 /** Enum values need to be in sync with UE3 */
 enum class EChannelTypes {
     Invalid = 0,    // Invalid type.
@@ -46,6 +48,12 @@ public:
 
     /** Index of "Unreal" name in name array. */
     int NameIndexUnreal = -1;
+
+    /**
+     * At the highest level, the entire stream is a series of frames.
+     * 个PartialNetworkStream对象的列表，表示整个流的帧序列。PartialNetworkStream是NetworkStream的一个内部类，存储着一帧的数据。
+     */
+    std::vector<PartialNetworkStream*> Frames;
 
     /** NetworkProfiler写入的文件头 */
     StreamHeader Header;

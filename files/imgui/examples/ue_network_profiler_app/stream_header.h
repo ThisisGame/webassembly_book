@@ -25,7 +25,7 @@ public:
     std::string GameName;
     std::string URL;
 
-    static std::istream& ReadHeader(std::istream& ParserStream) {
+    static StreamHeader& ReadHeader(std::ifstream& ParserStream) {
         StreamHeader Header;
 
         std::cout<<"tellg:"<<ParserStream.tellg()<<std::endl;
@@ -60,12 +60,12 @@ public:
         Header.URL = SerializeAnsiString(ParserStream);
         std::cout<<"tellg:"<<ParserStream.tellg()<<std::endl;
 
-        return ParserStream;
+        return Header;
     }
 
     StreamHeader() = default;
 
-    StreamHeader(std::istream& BinaryStream) {
+    StreamHeader(std::ifstream& BinaryStream) {
         BinaryStream.read(reinterpret_cast<char*>(&Magic), sizeof(Magic));
         if (Magic != ExpectedMagic) {
             return;
@@ -82,7 +82,7 @@ public:
     }
 
 private:
-    static std::string SerializeAnsiString(std::istream& BinaryStream) {
+    static std::string SerializeAnsiString(std::ifstream& BinaryStream) {
         uint32_t SerializedLength;
         BinaryStream.read(reinterpret_cast<char*>(&SerializedLength), sizeof(SerializedLength));
         std::vector<char> buffer(SerializedLength);

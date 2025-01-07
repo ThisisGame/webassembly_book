@@ -6,11 +6,28 @@
 #define EXAMPLE_PROFILER_APP_STREAM_PARSER_H
 
 
+#include <cassert>
 #include "network_stream.h"
 #include "tokens.h"
+#include "partial_network_stream.h"
 
 class StreamParser {
 public:
+    /**
+     * Helper function for handling updating actor summaries as they require a bit more work.
+     *
+     * @param	NetworkStream			NetworkStream associated with token
+     * @param	TokenReplicateActor		Actor token
+     */
+    static void HandleActorSummary(NetworkStream* networkStream, TokenReplicateActor* tokenReplicateActor)
+    {
+        if (tokenReplicateActor != nullptr)
+        {
+            int classNameIndex = networkStream->GetClassNameIndex(tokenReplicateActor->ActorNameIndex);
+//            networkStream->UpdateSummary(networkStream->ActorNameToSummary, classNameIndex, tokenReplicateActor->GetNumReplicatedBits(FilterValues()), tokenReplicateActor->TimeInMS);
+        }
+    }
+
     /**
      * Helper function for handling housekeeping that needs to happen when we parse a new actor
      * We used to emit actors before properties, but now we emit properties before actors
@@ -34,14 +51,16 @@ public:
         last_property_headers.clear();
     }
 
-    static NetworkStream Parse(std::istream& parserStream) {
+    static NetworkStream Parse(std::ifstream& parserStream) {
+        Reset();
+
         std::cout<<"tellg:"<<parserStream.tellg()<<std::endl;
 
         auto startTime = std::time(nullptr);
 
-        NetworkStream networkStream;
+        NetworkStream& networkStream = *network_stream_;
 
-        std::istream& parser_stream_return = StreamHeader::ReadHeader(parserStream);
+        networkStream.Header = StreamHeader::ReadHeader(parserStream);
 
         std::cout<<"tellg:"<<parserStream.tellg()<<std::endl;
 
@@ -56,6 +75,8 @@ public:
 
         int count = 0;
 
+        auto allFrames = new PartialNetworkStream(network_stream_->NameIndexUnreal, 1.0f / 30.0f);
+
         bool hasReachedEndOfStream = false;
 
         std::vector<TokenBase*> tokenList;
@@ -64,8 +85,11 @@ public:
         float frameEndTime = -1.0f;
 
         while (!hasReachedEndOfStream) {
+            //输出当前读取位置
+            std::cout<<"while loop tellg:"<<parserStream.tellg()<<std::endl;
+
             //如果已经读取到文件末尾，就不再读取
-            if (parserStream.eof()) {
+            if (parserStream.peek()==EOF) {
                 break;
             }
 
@@ -114,18 +138,29 @@ public:
             }
         }
 
+        std::cout<<"tokenList.size():"<<tokenList.size()<<std::endl;
+
         for (size_t i = 0; i < tokenList.size(); i++) {
 
             TokenBase* token = tokenList[i];
 
             if (((token->GetTokenType() == ETokenTypes::FrameMarker) || (token->GetTokenType() == ETokenTypes::EndOfStreamMarker)) && (currentFrameTokens.size() > 0)) {
                 float deltaTime = 1 / 30.0f;
-                if (token->GetTokenType() == ETokenTypes::FrameMarker && lastFrameMarker != nullptr) {
+                if (token->TokenType == ETokenTypes::FrameMarker && lastFrameMarker != nullptr) {
                     deltaTime = static_cast<TokenFrameMarker*>(token)->RelativeTime - lastFrameMarker->RelativeTime;
                 }
 
+                auto* frameStream = new PartialNetworkStream(currentFrameTokens, network_stream_->NameIndexUnreal, deltaTime);
+
+                allFrames->AddStream(frameStream);
+
+                network_stream_->Frames.push_back(frameStream);
                 currentFrameTokens.clear();
 
+                assert(lastProperties.empty());
+                assert(lastPropertyHeaders.empty());
+
+                HandleActorSummary(network_stream_, lastActorToken);
                 lastActorToken = nullptr;
             }
 
@@ -171,6 +206,13 @@ public:
         std::cout << "Parsing " << parserStream.tellg() / 1024 / 1024 << " MBytes in stream took " << parseTime << " seconds" << std::endl;
 
         return networkStream;
+    }
+
+    static void Reset() {
+        if(network_stream_!=nullptr){
+            delete network_stream_;
+        }
+        network_stream_ = new NetworkStream();
     }
 public:
     static NetworkStream* network_stream_;

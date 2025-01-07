@@ -4,4 +4,4 @@
 
 #include "stream_parser.h"
 
-NetworkStream* StreamParser::network_stream_=new NetworkStream();
+NetworkStream* StreamParser::network_stream_= nullptr;
