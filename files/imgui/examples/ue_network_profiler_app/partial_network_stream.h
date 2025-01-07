@@ -409,7 +409,20 @@ protected:
                 break;
             }
             case ETokenTypes::ConnectionSaturated:
+            {
+                auto TokenConnectionSaturated = static_cast<class TokenConnectionSaturated*>(Token);
                 break;
+            }
+            case ETokenTypes::ConnectionQueuedBits:
+            {
+                auto TokenConnectionQueuedBits = static_cast<class TokenConnectionQueuedBits*>(Token);
+                break;
+            }
+            case ETokenTypes::ConnectionNetLodLevel:
+            {
+                auto TokenConnectionNetLodLevel = static_cast<class TokenConnectionNetLodLevel*>(Token);
+                break;
+            }
             default:
                 throw std::invalid_argument("Invalid token type");
         }

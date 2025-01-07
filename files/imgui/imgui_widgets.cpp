@@ -8387,9 +8387,9 @@ int ImGui::PlotEx(ImGuiPlotType plot_type, const char* label, float (*values_get
             const float v0 = values_getter(data, (v_idx + values_offset) % values_count);
             const float v1 = values_getter(data, (v_idx + 1 + values_offset) % values_count);
             if (plot_type == ImGuiPlotType_Lines)
-                SetTooltip("%d: %8.4g\n%d: %8.4g", v_idx, v0, v_idx + 1, v1);
+                SetTooltip("%d: %.2f\n%d: %.2f", v_idx, v0, v_idx + 1, v1);
             else if (plot_type == ImGuiPlotType_Histogram)
-                SetTooltip("%d: %8.4g", v_idx, v0);
+                SetTooltip("%d: %.2f", v_idx, v0);
             idx_hovered = v_idx;
         }
 
@@ -8504,7 +8504,7 @@ int ImGui::PlotExWithTips(ImGuiPlotType plot_type, const char* label, float (*va
             const float v0 = values_getter(data, (v_idx + values_offset) % values_count);
             const float v1 = values_getter(data, (v_idx + 1 + values_offset) % values_count);
             if (plot_type == ImGuiPlotType_Lines)
-                SetTooltip("%d: %f\n%d: %f", v_idx, v0, v_idx + 1, v1);
+                SetTooltip("%d: %.2f\n%d: %.2f", v_idx, v0, v_idx + 1, v1);
             else if (plot_type == ImGuiPlotType_Histogram)
             {
                 if(tips.size()>0)
@@ -8520,7 +8520,7 @@ int ImGui::PlotExWithTips(ImGuiPlotType plot_type, const char* label, float (*va
                 }
                 else
                 {
-                    SetTooltip("%d: %f", v_idx, v0);
+                    SetTooltip("%d: %.2f", v_idx, v0);
                 }
             }
             idx_hovered = v_idx;

@@ -25,15 +25,15 @@ public:
     std::string GameName;
     std::string URL;
 
-    static StreamHeader& ReadHeader(std::ifstream& ParserStream) {
+    static StreamHeader ReadHeader(std::ifstream& ParserStream) {
         StreamHeader Header;
 
-        std::cout<<"tellg:"<<ParserStream.tellg()<<std::endl;
+//        std::cout<<"tellg:"<<ParserStream.tellg()<<std::endl;
 
         //读取Magic
         int size = sizeof(Header.Magic);
         ParserStream.read(reinterpret_cast<char *>(&Header.Magic), size);
-        std::cout<<"tellg:"<<ParserStream.tellg()<<std::endl;
+//        std::cout<<"tellg:"<<ParserStream.tellg()<<std::endl;
 
         if (Header.Magic != StreamHeader::ExpectedMagic) {
             ParserStream.seekg(0, std::ios::beg);
@@ -52,13 +52,13 @@ public:
         }
 
         Header.Tag = SerializeAnsiString(ParserStream);
-        std::cout<<"tellg:"<<ParserStream.tellg()<<std::endl;
+//        std::cout<<"tellg:"<<ParserStream.tellg()<<std::endl;
 
         Header.GameName = SerializeAnsiString(ParserStream);
-        std::cout<<"tellg:"<<ParserStream.tellg()<<std::endl;
+//        std::cout<<"tellg:"<<ParserStream.tellg()<<std::endl;
 
         Header.URL = SerializeAnsiString(ParserStream);
-        std::cout<<"tellg:"<<ParserStream.tellg()<<std::endl;
+//        std::cout<<"tellg:"<<ParserStream.tellg()<<std::endl;
 
         return Header;
     }

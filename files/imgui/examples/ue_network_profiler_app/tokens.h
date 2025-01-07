@@ -350,14 +350,14 @@ private:
 public:
     /** Constructor, serializing members from passed in stream. */
     TokenConnectionSaturated(std::ifstream& BinaryStream) {
-        std::cout<<"tellg:"<<BinaryStream.tellg()<<std::endl;
+//        std::cout<<"tellg:"<<BinaryStream.tellg()<<std::endl;
         NumDroppedActors = TokenHelper::LoadPackedInt(BinaryStream);
-        std::cout<<"tellg:"<<BinaryStream.tellg()<<std::endl;
+//        std::cout<<"tellg:"<<BinaryStream.tellg()<<std::endl;
 
         for (int i = 0; i < NumDroppedActors; ++i) {
-            std::cout<<"tellg:"<<BinaryStream.tellg()<<std::endl;
+//            std::cout<<"tellg:"<<BinaryStream.tellg()<<std::endl;
             int NameIndex = TokenHelper::LoadPackedInt(BinaryStream);
-            std::cout<<"tellg:"<<BinaryStream.tellg()<<std::endl;
+//            std::cout<<"tellg:"<<BinaryStream.tellg()<<std::endl;
             DroppedActorNameIndices.push_back(NameIndex);
         }
     }

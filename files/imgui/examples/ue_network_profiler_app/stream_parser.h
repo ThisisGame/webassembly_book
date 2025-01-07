@@ -54,7 +54,7 @@ public:
     static NetworkStream Parse(std::ifstream& parserStream) {
         Reset();
 
-        std::cout<<"tellg:"<<parserStream.tellg()<<std::endl;
+//        std::cout<<"tellg:"<<parserStream.tellg()<<std::endl;
 
         auto startTime = std::time(nullptr);
 
@@ -62,7 +62,7 @@ public:
 
         networkStream.Header = StreamHeader::ReadHeader(parserStream);
 
-        std::cout<<"tellg:"<<parserStream.tellg()<<std::endl;
+//        std::cout<<"tellg:"<<parserStream.tellg()<<std::endl;
 
         std::vector<TokenBase*> currentFrameTokens;
         TokenReplicateActor* lastActorToken = nullptr;
@@ -86,7 +86,7 @@ public:
 
         while (!hasReachedEndOfStream) {
             //输出当前读取位置
-            std::cout<<"while loop tellg:"<<parserStream.tellg()<<std::endl;
+//            std::cout<<"while loop tellg:"<<parserStream.tellg()<<std::endl;
 
             //如果已经读取到文件末尾，就不再读取
             if (parserStream.peek()==EOF) {
