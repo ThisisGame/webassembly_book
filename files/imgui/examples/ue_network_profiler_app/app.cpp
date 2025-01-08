@@ -155,7 +155,7 @@ void App::Update(int window_width, int window_height) {
                         bool is_selected=(selected_connection_index==i);
                         if(ImGui::Selectable(network_stream_.StringAddressArray[i].c_str(),is_selected)) {
                             selected_connection_index=i;
-                            has_collect_connection_data_=false;
+                            ResetData();
                         }
                         if(is_selected) {
                             ImGui::SetItemDefaultFocus();
@@ -163,110 +163,18 @@ void App::Update(int window_width, int window_height) {
                     }
                     ImGui::EndCombo();
                 }
-                const char* connection_name=network_stream_.StringAddressArray[selected_connection_index].c_str();
 
-                //显示Connection的带宽余量
-                ImGui::BeginChild(connection_name,ImVec2(0, 120*4),true,ImGuiWindowFlags_AlwaysHorizontalScrollbar);
+                //构造QueuedBits数据
+                CollectData(selected_connection_index);
+
+                //创建Connection下拉框
+                const char* connection_name=network_stream_.StringAddressArray[selected_connection_index].c_str();
+                ImGui::BeginChild(connection_name,ImVec2(0, 125*4),true,ImGuiWindowFlags_AlwaysHorizontalScrollbar);
                 {
                     static float queued_bits_middle_value=0.f;
                     ImGui::SliderFloat("middle value", &queued_bits_middle_value, min_queued_bits, max_queued_bits);
 
                     int frame_num=network_stream_.Frames.size();
-
-                    //构造QueuedBits数据
-                    if(has_collect_connection_data_==false){
-                        has_collect_connection_data_=true;
-                        queued_bits_data.clear();
-                        queued_bits_data_show_tips.clear();
-                        replicate_actor_bits_write_data.clear();
-                        replicate_actor_bits_write_data_show_tips.clear();
-                        rpc_bits_write_data.clear();
-                        rpc_bits_write_data_show_tips.clear();
-
-                        for(int i=0;i<frame_num;i++) {
-                            float replicate_actor_bits=0.f;
-                            std::string replicate_actor_bits_write_data_show_tip;
-                            std::string replicate_actor_bits_write_data_short_tip;
-
-                            std::unordered_map<int,TokenSendRPC> actor_rpc_map;
-                            float rpc_bits = 0.f;
-                            std::string rpc_bits_write_data_show_tip;
-
-                            PartialNetworkStream* frame=network_stream_.Frames[i];
-                            for(const auto& Token:frame->Tokens){
-                                if(Token->ConnectionIndex==selected_connection_index){
-                                    ETokenTypes token_type=Token->GetTokenType();
-                                    if(token_type==ETokenTypes::ConnectionQueuedBits){
-                                        queued_bits_data.push_back(static_cast<TokenConnectionQueuedBits*>(Token)->QueuedBits);
-                                        //更新最大最小值
-                                        if(queued_bits_data[i]>max_queued_bits) {
-                                            max_queued_bits=queued_bits_data[i];
-                                        }
-                                        if(queued_bits_data[i]<min_queued_bits) {
-                                            min_queued_bits=queued_bits_data[i];
-                                        }
-                                    } else if (token_type==ETokenTypes::ReplicateActor) {
-                                        TokenReplicateActor* token_replicate_actor=static_cast<TokenReplicateActor*>(Token);
-                                        if(token_replicate_actor->ConnectionIndex==selected_connection_index){
-                                            replicate_actor_bits+=token_replicate_actor->GetNumReplicatedBits();
-                                            replicate_actor_bits_write_data_show_tip+=token_replicate_actor->GetDescription();
-                                            replicate_actor_bits_write_data_short_tip+=token_replicate_actor->GetShortDescription();
-                                        }
-                                    } else if (token_type==ETokenTypes::SendRPC) {
-                                        TokenSendRPC* token_send_rpc=static_cast<TokenSendRPC*>(Token);
-                                        if(token_send_rpc->ConnectionIndex==selected_connection_index){
-                                            rpc_bits+=token_send_rpc->GetNumTotalBits();
-                                            rpc_bits_write_data_show_tip+=token_send_rpc->GetDescription();
-                                        }
-                                    }
-                                }
-                            }
-
-                            //归总属性同步数据
-                            {
-                                replicate_actor_bits_write_data.push_back(replicate_actor_bits);
-                                //更新最大最小值
-                                if(replicate_actor_bits>max_replicate_actor_bits_write) {
-                                    max_replicate_actor_bits_write=replicate_actor_bits;
-                                }
-                                if(replicate_actor_bits<min_replicate_actor_bits_write) {
-                                    min_replicate_actor_bits_write=replicate_actor_bits;
-                                }
-
-                                std::string head_str;
-                                head_str+="total_bits_write:"+std::to_string(replicate_actor_bits);
-                                head_str+="\n-----------------------------\n";
-                                head_str+="udp_head:"+std::to_string(UDP_HEADER_SIZE);
-                                head_str+="\n--------------replicator:" + std::to_string(replicate_actor_bits) + "---------------\n";
-                                replicate_actor_bits_write_data_show_tip = head_str + replicate_actor_bits_write_data_show_tip;
-                                replicate_actor_bits_write_data_show_tips.push_back(replicate_actor_bits_write_data_show_tip);
-
-                                replicate_actor_bits_write_data_short_tip = head_str + replicate_actor_bits_write_data_short_tip;
-                                replicate_actor_bits_write_data_short_tips.push_back(replicate_actor_bits_write_data_short_tip);
-                            }
-
-                            //归总RPC数据
-                            {
-                                rpc_bits_write_data.push_back(rpc_bits);
-                                //更新最大最小值
-                                if(rpc_bits>max_rpc_bits_write) {
-                                    max_rpc_bits_write=rpc_bits;
-                                }
-                                if(rpc_bits<min_rpc_bits_write) {
-                                    min_rpc_bits_write=rpc_bits;
-                                }
-
-                                std::string head_str;
-                                head_str+="total_bits_write:"+std::to_string(rpc_bits);
-                                head_str+="\n-----------------------------\n";
-                                head_str+="udp_head:"+std::to_string(UDP_HEADER_SIZE);
-                                head_str+="\n--------------rpc:" + std::to_string(rpc_bits) + "---------------\n";
-                                rpc_bits_write_data_show_tip = head_str + rpc_bits_write_data_show_tip;
-                                rpc_bits_write_data_show_tips.push_back(rpc_bits_write_data_show_tip);
-                            }
-                        }
-                    }
-
                     float window_width = frame_num * 10;
 
                     //绘制QueuedBits曲线
@@ -277,18 +185,10 @@ void App::Update(int window_width, int window_height) {
                         ImGui::PlotLines("##QueuedBits PlotLines", queued_bits_data.data(), frame_num,0,NULL,min_queued_bits,max_queued_bits,ImVec2(window_width,80.0f));
                         ImGui::EndChild();
 
-                        //构造QueuedBits柱形图详情
-                        static std::vector<std::string> tips;
-                        if(tips.empty()) {
-                            for(int i=0;i<frame_num;i++) {
-                                tips.push_back("QueuedBits:"+std::to_string(queued_bits_data[i]));
-                            }
-                        }
-
                         //绘制QueuedBits柱状图
                         ImGui::Text("QueuedBits");
                         ImGui::BeginChild("##QueuedBits PlotHistogram", ImVec2(window_width, 80.0f));
-                        ImGui::PlotHistogramWithColor("##QueuedBits PlotHistogram", queued_bits_data.data(), frame_num, 0, NULL, min_queued_bits, max_queued_bits, ImVec2(window_width, 80.0f), sizeof(float), queued_bits_middle_value, ImGui::GetColorU32(ImVec4(1,0,0,1)), ImGui::GetColorU32(ImVec4(0,1,0,1)), tips,hover_tip_);
+                        ImGui::PlotHistogramWithColor("##QueuedBits PlotHistogram", queued_bits_data.data(), frame_num, 0, NULL, min_queued_bits, max_queued_bits, ImVec2(window_width, 80.0f), sizeof(float), queued_bits_middle_value, ImGui::GetColorU32(ImVec4(1,0,0,1)), ImGui::GetColorU32(ImVec4(0,1,0,1)), queued_bits_data_show_tips,hover_tip_);
                         ImGui::EndChild();
                     }
 
@@ -296,7 +196,7 @@ void App::Update(int window_width, int window_height) {
                     ImGui::Text("ReplicateActor BitsWrite");
                     //按下l键时，切换到详细提示
                     ImGuiIO& io = ImGui::GetIO();
-                    if(ImGui::IsKeyDown(ImGuiKey_L)){
+                    if(ImGui::IsKeyDown(ImGuiKey_D)){
                         ImGui::BeginChild("##ReplicateActor PlotHistogram Details", ImVec2(window_width, 80.0f));
                         ImGui::PlotHistogramWithColor("##ReplicateActor PlotHistogram Details", replicate_actor_bits_write_data.data(), replicate_actor_bits_write_data.size(), 0, NULL, min_replicate_actor_bits_write, max_replicate_actor_bits_write, ImVec2(window_width, 80.0f), sizeof(float), 0, ImGui::GetColorU32(ImVec4(1, 0, 0, 1)), ImGui::GetColorU32(ImVec4(0, 1, 0, 1)), replicate_actor_bits_write_data_show_tips,hover_tip_);
                         ImGui::EndChild();
@@ -319,11 +219,145 @@ void App::Update(int window_width, int window_height) {
     }
 }
 
-void App::ResetData() {
+void App::CollectData(int selected_connection_index) {
+    if(has_collect_connection_data_==false){
+        has_collect_connection_data_=true;
 
+        int frame_num=network_stream_.Frames.size();
+        for(int i=0;i<frame_num;i++) {
+            float queued_bits=0.f;
+            std::string queued_bits_show_tip;
+
+            float replicate_actor_bits=0.f;
+            std::string replicate_actor_bits_write_data_show_tip;
+            std::string replicate_actor_bits_write_data_short_tip;
+
+            std::unordered_map<int,TokenSendRPC> actor_rpc_map;
+            float rpc_bits = 0.f;
+            std::string rpc_bits_write_data_show_tip;
+
+            PartialNetworkStream* frame=network_stream_.Frames[i];
+            for(const auto& Token:frame->Tokens){
+                if(Token->ConnectionIndex==selected_connection_index){
+                    ETokenTypes token_type=Token->GetTokenType();
+                    if(token_type==ETokenTypes::ConnectionQueuedBits){
+                        TokenConnectionQueuedBits* token_connection_queued_bits=static_cast<TokenConnectionQueuedBits*>(Token);
+                        if(token_connection_queued_bits->ConnectionIndex==selected_connection_index){
+                            queued_bits=token_connection_queued_bits->QueuedBits;
+                        }
+                    } else if (token_type==ETokenTypes::ReplicateActor) {
+                        TokenReplicateActor* token_replicate_actor=static_cast<TokenReplicateActor*>(Token);
+                        if(token_replicate_actor->ConnectionIndex==selected_connection_index){
+                            replicate_actor_bits+=token_replicate_actor->GetNumReplicatedBits();
+                            replicate_actor_bits_write_data_show_tip+=token_replicate_actor->GetDescription();
+                            replicate_actor_bits_write_data_short_tip+=token_replicate_actor->GetShortDescription();
+                        }
+                    } else if (token_type==ETokenTypes::SendRPC) {
+                        TokenSendRPC* token_send_rpc=static_cast<TokenSendRPC*>(Token);
+                        if(token_send_rpc->ConnectionIndex==selected_connection_index){
+                            rpc_bits+=token_send_rpc->GetNumTotalBits();
+                            rpc_bits_write_data_show_tip+=token_send_rpc->GetDescription();
+                        }
+                    }
+                }
+            }
+
+            //归总QueuedBits数据
+            {
+                queued_bits_data.push_back(queued_bits);
+                //更新最大最小值
+                if(queued_bits>max_queued_bits) {
+                    max_queued_bits=queued_bits;
+                }
+                if(queued_bits<min_queued_bits) {
+                    min_queued_bits=queued_bits;
+                }
+
+                std::string head_str;
+                head_str+="queued_bits:"+std::to_string(queued_bits) + "\n";
+                head_str+="-----------------------------\n";
+                head_str+="total_bits_write:"+std::to_string(replicate_actor_bits + rpc_bits) + "\n";
+                head_str+="-----------------------------\n";
+                head_str+="udp_head:"+std::to_string(UDP_HEADER_SIZE);
+                if(replicate_actor_bits>0){
+                    head_str+="\n--------------replicator:" + std::to_string(replicate_actor_bits) + "---------------\n";
+                    head_str+= replicate_actor_bits_write_data_short_tip;
+                }
+                if(rpc_bits>0){
+                    head_str+="\n--------------rpc:" + std::to_string(rpc_bits) + "---------------\n";
+                    head_str+= rpc_bits_write_data_show_tip;
+                }
+                queued_bits_data_show_tips.push_back(head_str);
+            }
+
+            //归总属性同步数据
+            {
+                replicate_actor_bits_write_data.push_back(replicate_actor_bits);
+                //更新最大最小值
+                if(replicate_actor_bits>max_replicate_actor_bits_write) {
+                    max_replicate_actor_bits_write=replicate_actor_bits;
+                }
+                if(replicate_actor_bits<min_replicate_actor_bits_write) {
+                    min_replicate_actor_bits_write=replicate_actor_bits;
+                }
+
+                std::string head_str;
+                head_str+="total_bits_write:"+std::to_string(replicate_actor_bits);
+                head_str+="\n-----------------------------\n";
+                head_str+="udp_head:"+std::to_string(UDP_HEADER_SIZE);
+                head_str+="\n--------------replicator:" + std::to_string(replicate_actor_bits) + "---------------\n";
+                replicate_actor_bits_write_data_show_tip = head_str + replicate_actor_bits_write_data_show_tip;
+                replicate_actor_bits_write_data_show_tips.push_back(replicate_actor_bits_write_data_show_tip);
+
+                replicate_actor_bits_write_data_short_tip = head_str + replicate_actor_bits_write_data_short_tip;
+                replicate_actor_bits_write_data_short_tips.push_back(replicate_actor_bits_write_data_short_tip);
+            }
+
+            //归总RPC数据
+            {
+                rpc_bits_write_data.push_back(rpc_bits);
+                //更新最大最小值
+                if(rpc_bits>max_rpc_bits_write) {
+                    max_rpc_bits_write=rpc_bits;
+                }
+                if(rpc_bits<min_rpc_bits_write) {
+                    min_rpc_bits_write=rpc_bits;
+                }
+
+                std::string head_str;
+                head_str+="total_bits_write:"+std::to_string(rpc_bits);
+                head_str+="\n-----------------------------\n";
+                head_str+="udp_head:"+std::to_string(UDP_HEADER_SIZE);
+                head_str+="\n--------------rpc:" + std::to_string(rpc_bits) + "---------------\n";
+                rpc_bits_write_data_show_tip = head_str + rpc_bits_write_data_show_tip;
+                rpc_bits_write_data_show_tips.push_back(rpc_bits_write_data_show_tip);
+            }
+        }
+    }
+}
+
+void App::ResetData() {
+    queued_bits_data.clear();
+    queued_bits_data_show_tips.clear();
+    max_queued_bits=FLT_MIN;
+    min_queued_bits=FLT_MAX;
+
+    replicate_actor_bits_write_data.clear();
+    replicate_actor_bits_write_data_show_tips.clear();
+    replicate_actor_bits_write_data_short_tips.clear();
+    max_replicate_actor_bits_write=FLT_MIN;
+    min_replicate_actor_bits_write=FLT_MAX;
+
+    rpc_bits_write_data.clear();
+    rpc_bits_write_data_show_tips.clear();
+    max_rpc_bits_write=FLT_MIN;
+    min_rpc_bits_write=FLT_MAX;
+
+    has_collect_connection_data_=false;
 }
 
 void App::ParseLogFile(const std::string &file_path) {
+    ResetData();
 
     std::ifstream file(file_path);
     ParseNProf(file_path);

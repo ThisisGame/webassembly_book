@@ -13,7 +13,7 @@ TokenBase* TokenBase::ReadNextToken(std::ifstream& BinaryStream, NetworkStream& 
     BinaryStream.read(&TokenChar, 1);
 
     //输出当前读取位置
-    std::cout<<"readtoken tellg:"<<BinaryStream.tellg()<<std::endl;
+//    std::cout<<"readtoken tellg:"<<BinaryStream.tellg()<<std::endl;
 
     // Token type is stored in the first byte of the token
     TokenType = static_cast<ETokenTypes>(TokenChar);

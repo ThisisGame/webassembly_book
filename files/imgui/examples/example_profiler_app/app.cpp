@@ -175,7 +175,7 @@ void App::Update(int window_width, int window_height) {
                     std::vector<float>& bits_write_data=connection_replicate_actor_bits_write_data_map[key_value_pair.first];
                     //按下l键时，切换到详细提示
                     ImGuiIO& io = ImGui::GetIO();
-                    if(ImGui::IsKeyDown(ImGuiKey_L)){
+                    if(ImGui::IsKeyDown(ImGuiKey_D)){
                         ImGui::BeginChild("##ReplicateActor PlotHistogram Details", ImVec2(window_width, 80.0f));
                         ImGui::PlotHistogramWithColor("##ReplicateActor PlotHistogram Details", bits_write_data.data(), bits_write_data.size(), 0, NULL, min_replicate_actor_bits_write, max_replicate_actor_bits_write, ImVec2(window_width, 80.0f), sizeof(float), 0, ImGui::GetColorU32(ImVec4(1, 0, 0, 1)), ImGui::GetColorU32(ImVec4(0, 1, 0, 1)), connection_replicate_actor_bits_write_data_show_tips_map[key_value_pair.first],hover_tip_);
                         ImGui::EndChild();

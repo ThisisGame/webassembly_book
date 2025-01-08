@@ -8512,8 +8512,8 @@ int ImGui::PlotExWithTips(ImGuiPlotType plot_type, const char* label, float (*va
                     std::string& str=tips[v_idx];
                     SetTooltip("%d: \n%s", v_idx, str.c_str());
 
-                    //按下l键时，复制str到hover_tip，锁定到窗口显示
-                    if(IsKeyDown(ImGuiKey_L))
+                    //按下F键时，复制str到hover_tip，锁定到窗口显示
+                    if(IsKeyDown(ImGuiKey_F))
                     {
                         hover_tip=str;
                     }

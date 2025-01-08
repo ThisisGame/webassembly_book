@@ -29,6 +29,7 @@ public:
     void Init(GLFWwindow* window);
     void Update(int window_width, int window_height);
     void ResetData();
+    void CollectData(int selected_connection_index);
     void ParseLogFile(const std::string& file_path);
     void ParseNProf(const std::string& file_path);
     void ParseLogLines(const std::vector<std::string>& lines);
@@ -49,16 +50,16 @@ private:
     float min_queued_bits=FLT_MAX;
 
     std::vector<float> replicate_actor_bits_write_data;//属性同步BitsWrite柱状图 数据
-    float max_replicate_actor_bits_write=FLT_MIN;
-    float min_replicate_actor_bits_write=FLT_MAX;
     std::vector<std::string> replicate_actor_bits_write_data_show_tips;//属性同步BitsWrite柱状图 显示的提示
     std::vector<std::string> replicate_actor_bits_write_data_short_tips;//属性同步BitsWrite柱状图 显示的简要提示
+    float max_replicate_actor_bits_write=FLT_MIN;
+    float min_replicate_actor_bits_write=FLT_MAX;
 
 
     std::vector<float> rpc_bits_write_data;//RPCBitsWrite柱状图 数据
+    std::vector<std::string> rpc_bits_write_data_show_tips;//RPCBitsWrite柱状图 显示的提示
     float max_rpc_bits_write=FLT_MIN;
     float min_rpc_bits_write=FLT_MAX;
-    std::vector<std::string> rpc_bits_write_data_show_tips;//RPCBitsWrite柱状图 显示的提示
 
 
     std::map<std::string,std::vector<std::string>> connection_queued_bits_data_show_tips_map;//QueuedBits柱状图 连接名字和显示的提示

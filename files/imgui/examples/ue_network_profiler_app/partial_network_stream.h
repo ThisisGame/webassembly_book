@@ -178,6 +178,8 @@ public:
     float FirstFrameDeltaTime = 0; // Delta time of first frame. Passed to constructor as we can't calculate it.
     int NameIndexUnreal = -1; // Index of "Unreal" name in network stream name table.
 
+    static FilterValues filter_value_;
+
     PartialNetworkStream(std::vector<TokenBase*> InTokens, int InNameIndexUnreal, float InDeltaTime)
     {
         NameIndexUnreal = InNameIndexUnreal;
@@ -188,10 +190,10 @@ public:
             Tokens.push_back(Token);
         }
 
-        CreateSummary(NameIndexUnreal, FirstFrameDeltaTime, FilterValues());
+        CreateSummary(NameIndexUnreal, FirstFrameDeltaTime, filter_value_);
     }
 
-    PartialNetworkStream(PartialNetworkStream* InStream, FilterValues InFilterValues)
+    PartialNetworkStream(PartialNetworkStream* InStream, FilterValues& InFilterValues)
     {
         NameIndexUnreal = InStream->NameIndexUnreal;
         FirstFrameDeltaTime = InStream->FirstFrameDeltaTime;
@@ -207,7 +209,7 @@ public:
         CreateSummary(NameIndexUnreal, FirstFrameDeltaTime, InFilterValues);
     }
 
-    PartialNetworkStream(MainWindow* InMainWindow, std::vector<PartialNetworkStream*> InStreams, int InStartFrame, int InEndFrame, int InNameIndexUnreal, FilterValues InFilterValues, float InDeltaTime)
+    PartialNetworkStream(MainWindow* InMainWindow, std::vector<PartialNetworkStream*> InStreams, int InStartFrame, int InEndFrame, int InNameIndexUnreal, FilterValues& InFilterValues, float InDeltaTime)
     {
         NameIndexUnreal = InNameIndexUnreal;
         FirstFrameDeltaTime = InDeltaTime;
@@ -251,17 +253,18 @@ public:
         for (auto Token : InStream->Tokens)
         {
             Tokens.push_back(Token);
-            UpdateSummary(Token, FilterValues());
+
+            UpdateSummary(Token, filter_value_);
         }
     }
 
-    PartialNetworkStream* Filter(FilterValues InFilterValues)
+    PartialNetworkStream* Filter(FilterValues& InFilterValues)
     {
         return new PartialNetworkStream(this, InFilterValues);
     }
 
 protected:
-    void UpdateSummary(TokenBase* Token, FilterValues InFilterValues)
+    void UpdateSummary(TokenBase* Token, FilterValues& InFilterValues)
     {
         switch (Token->TokenType)
         {
@@ -428,7 +431,7 @@ protected:
         }
     }
 
-    void CreateSummary(int NameIndexUnreal, float DeltaTime, FilterValues InFilterValues)
+    void CreateSummary(int NameIndexUnreal, float DeltaTime, FilterValues& InFilterValues)
     {
         for (auto Token : Tokens)
         {
@@ -438,7 +441,7 @@ protected:
         EndTime += DeltaTime;
     }
 
-    void ToDetailedTreeView(TreeNodeCollection& Nodes, FilterValues InFilterValues)
+    void ToDetailedTreeView(TreeNodeCollection& Nodes, FilterValues& InFilterValues)
     {
         Nodes.Clear();
 

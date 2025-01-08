@@ -3,3 +3,6 @@
 //
 
 #include "partial_network_stream.h"
+
+
+FilterValues PartialNetworkStream::filter_value_;
