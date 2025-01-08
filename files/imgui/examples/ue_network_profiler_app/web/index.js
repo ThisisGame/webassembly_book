@@ -35,7 +35,7 @@ if (ENVIRONMENT_IS_NODE) {
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-// include: C:\Users\CAPTAI~1\AppData\Local\Temp\tmpppk7ga50.js
+// include: C:\Users\CAPTAI~1\AppData\Local\Temp\tmp0jzfg11w.js
 
   Module['expectedDataFileDownloads'] ??= 0;
   Module['expectedDataFileDownloads']++;
@@ -216,21 +216,21 @@ Module['FS_createPath']("/", "fonts", true, true);
 
   })();
 
-// end include: C:\Users\CAPTAI~1\AppData\Local\Temp\tmpppk7ga50.js
-// include: C:\Users\CAPTAI~1\AppData\Local\Temp\tmp3l4tdzs1.js
+// end include: C:\Users\CAPTAI~1\AppData\Local\Temp\tmp0jzfg11w.js
+// include: C:\Users\CAPTAI~1\AppData\Local\Temp\tmpiul36voz.js
 
     // All the pre-js content up to here must remain later on, we need to run
     // it.
     if (Module['$ww'] || (typeof ENVIRONMENT_IS_PTHREAD != 'undefined' && ENVIRONMENT_IS_PTHREAD)) Module['preRun'] = [];
     var necessaryPreJSTasks = Module['preRun'].slice();
-  // end include: C:\Users\CAPTAI~1\AppData\Local\Temp\tmp3l4tdzs1.js
-// include: C:\Users\CAPTAI~1\AppData\Local\Temp\tmplc60immy.js
+  // end include: C:\Users\CAPTAI~1\AppData\Local\Temp\tmpiul36voz.js
+// include: C:\Users\CAPTAI~1\AppData\Local\Temp\tmpbob9ijbd.js
 
     if (!Module['preRun']) throw 'Module.preRun should exist because file support used it; did a pre-js delete it?';
     necessaryPreJSTasks.forEach((task) => {
       if (Module['preRun'].indexOf(task) < 0) throw 'All preRun tasks that exist before user pre-js code should remain after; did you replace Module or modify Module.preRun?';
     });
-  // end include: C:\Users\CAPTAI~1\AppData\Local\Temp\tmplc60immy.js
+  // end include: C:\Users\CAPTAI~1\AppData\Local\Temp\tmpbob9ijbd.js
 
 
 // Sometimes an existing Module object exists with properties
@@ -1110,7 +1110,7 @@ function dbg(...args) {
 // === Body ===
 
 var ASM_CONSTS = {
-  1073924406: ($0) => { downloadFile(UTF8ToString($0)); }
+  1073926102: ($0) => { downloadFile(UTF8ToString($0)); }
 };
 function canvas_get_width() { return Module.canvas.width; }
 function canvas_get_height() { return Module.canvas.height; }
@@ -4319,6 +4319,7 @@ function ImGui_ImplGlfw_EmscriptenOpenURL(url) { url = url ? UTF8ToString(url) :
   var _emscripten_asm_const_int = (code, sigPtr, argbuf) => {
       return runEmAsmFunction(code, sigPtr, argbuf);
     };
+
 
   var _emscripten_err = (str) => err(UTF8ToString(str));
 
@@ -8269,6 +8270,8 @@ var wasmImports = {
   clock_time_get: _clock_time_get,
   /** @export */
   emscripten_asm_const_int: _emscripten_asm_const_int,
+  /** @export */
+  emscripten_date_now: _emscripten_date_now,
   /** @export */
   emscripten_err: _emscripten_err,
   /** @export */

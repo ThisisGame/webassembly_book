@@ -33,22 +33,23 @@ public:
     static const int NumBitsPerDWord = 32;
     static const int NumBitsPerDWordLog2 = 5;
 
-    static int LoadPackedInt(std::ifstream& BinaryStream) {
-        uint32_t Value = 0;
-        uint8_t cnt = 0;
+    static int LoadPackedInt(BufferStream& BinaryStream) {
+        int Value = 0;
+        char cnt = 0;
         bool more = true;
         while (more) {
-            uint32_t NextByte = BinaryStream.get();
+            unsigned char NextByte = BinaryStream.get();
 
             more = (NextByte & 1) != 0;  // Check 1 bit to see if there's more after this
             NextByte = NextByte >> 1;    // Shift to get actual 7 bit value
-            Value += NextByte << (7 * cnt++);  // Add to total value
+            unsigned int real_byte = NextByte << (7 * cnt++);//写入的时候是将int的4个字节拆开了，cnt就是当前处理的第几个字节，然后将这个字节的值左移7*cnt位，这样就可以将4个字节的值合并了
+            Value += real_byte;  // Add to total value
         }
 
-        return static_cast<int>(Value);
+        return Value;
     }
 
-    static void ReadBitArray(std::ifstream& BinaryStream, std::bitset<NumBitsPerDWord>& OutBitArray) {
+    static void ReadBitArray(BufferStream& BinaryStream, std::bitset<NumBitsPerDWord>& OutBitArray) {
         // TODO: Verify Endianness
         int NumBits = LoadPackedInt(BinaryStream);
         int NumInts = ((NumBits + NumBitsPerDWord - 1) >> NumBitsPerDWordLog2);
@@ -95,7 +96,7 @@ public:
     ETokenTypes TokenType = ETokenTypes::MaxAndInvalid;
     int ConnectionIndex = 0;
 
-    static TokenBase* ReadNextToken(std::ifstream& BinaryStream, NetworkStream& InNetworkStream);
+    static TokenBase* ReadNextToken(BufferStream& BinaryStream, NetworkStream& InNetworkStream);
 
     ETokenTypes GetTokenType() const {
         return TokenType;
@@ -132,7 +133,7 @@ public:
     float RelativeTime;
 
     /** Constructor, serializing members from passed in stream. */
-    TokenFrameMarker(std::ifstream& BinaryStream) {
+    TokenFrameMarker(BufferStream& BinaryStream) {
         BinaryStream.read(reinterpret_cast<char*>(&RelativeTime), sizeof(RelativeTime));
     }
 
@@ -161,7 +162,7 @@ public:
     uint16_t NumPaddingBits;
 
     /** Constructor, serializing members from passed in stream. */
-    TokenSocketSendTo(std::ifstream& BinaryStream) {
+    TokenSocketSendTo(BufferStream& BinaryStream) {
         SocketNameIndex = TokenHelper::LoadPackedInt(BinaryStream);
         BinaryStream.read(reinterpret_cast<char*>(&BytesSent), sizeof(BytesSent));
         BinaryStream.read(reinterpret_cast<char*>(&NumPacketIdBits), sizeof(NumPacketIdBits));
@@ -193,7 +194,7 @@ public:
     uint16_t NumPayloadBits;
 
     /** Constructor, serializing members from passed in stream. */
-    TokenSendBunch(std::ifstream& BinaryStream, uint32_t Version) {
+    TokenSendBunch(BufferStream& BinaryStream, uint32_t Version) {
         BinaryStream.read(reinterpret_cast<char*>(&ChannelIndex), sizeof(ChannelIndex));
         if (Version < 11) {
             BinaryStream.read(reinterpret_cast<char*>(&ChannelType), sizeof(ChannelType));
@@ -230,7 +231,7 @@ public:
     uint16_t NumFooterBits;
 
     /** Constructor, serializing members from passed in stream. */
-    TokenSendRPC(std::ifstream& BinaryStream, uint32_t Version) {
+    TokenSendRPC(BufferStream& BinaryStream, uint32_t Version) {
         ActorNameIndex = TokenHelper::LoadPackedInt(BinaryStream);
         FunctionNameIndex = TokenHelper::LoadPackedInt(BinaryStream);
 
@@ -265,7 +266,7 @@ public:
     uint16_t NumBits;
 
     /** Constructor, serializing members from passed in stream. */
-    TokenReplicateProperty(std::ifstream& BinaryStream) {
+    TokenReplicateProperty(BufferStream& BinaryStream) {
         PropertyNameIndex = TokenHelper::LoadPackedInt(BinaryStream);
         BinaryStream.read(reinterpret_cast<char*>(&NumBits), sizeof(NumBits));
     }
@@ -279,7 +280,7 @@ public:
     uint16_t NumBits;
 
     /** Constructor, serializing members from passed in stream. */
-    TokenWritePropertyHeader(std::ifstream& BinaryStream) {
+    TokenWritePropertyHeader(BufferStream& BinaryStream) {
         PropertyNameIndex = TokenHelper::LoadPackedInt(BinaryStream);
         BinaryStream.read(reinterpret_cast<char*>(&NumBits), sizeof(NumBits));
     }
@@ -307,7 +308,7 @@ public:
     std::vector<TokenWritePropertyHeader> PropertyHeaders;
 
     /** Constructor, serializing members from passed in stream. */
-    TokenReplicateActor(std::ifstream& BinaryStream) {
+    TokenReplicateActor(BufferStream& BinaryStream) {
         NetFlags = BinaryStream.get();
         ActorNameIndex = TokenHelper::LoadPackedInt(BinaryStream);
         BinaryStream.read(reinterpret_cast<char*>(&TimeInMS), sizeof(TimeInMS));
@@ -349,7 +350,7 @@ private:
 
 public:
     /** Constructor, serializing members from passed in stream. */
-    TokenConnectionSaturated(std::ifstream& BinaryStream) {
+    TokenConnectionSaturated(BufferStream& BinaryStream) {
 //        std::cout<<"tellg:"<<BinaryStream.tellg()<<std::endl;
         NumDroppedActors = TokenHelper::LoadPackedInt(BinaryStream);
 //        std::cout<<"tellg:"<<BinaryStream.tellg()<<std::endl;
@@ -367,7 +368,7 @@ class TokenConnectionQueuedBits : public TokenBase {
 public:
     int QueuedBits;
 
-    TokenConnectionQueuedBits(std::ifstream& BinaryStream) {
+    TokenConnectionQueuedBits(BufferStream& BinaryStream) {
         QueuedBits = TokenHelper::LoadPackedInt(BinaryStream);
     }
 };
@@ -376,7 +377,7 @@ class TokenConnectionNetLodLevel : public TokenBase {
 public:
     int NetLodLevel;
 
-    TokenConnectionNetLodLevel(std::ifstream& BinaryStream) {
+    TokenConnectionNetLodLevel(BufferStream& BinaryStream) {
         NetLodLevel = TokenHelper::LoadPackedInt(BinaryStream);
     }
 };
@@ -387,7 +388,7 @@ public:
     uint16_t NumBits;
 
     /** Constructor, serializing members from passed in stream. */
-    TokenExportBunch(std::ifstream& BinaryStream) {
+    TokenExportBunch(BufferStream& BinaryStream) {
         BinaryStream.read(reinterpret_cast<char*>(&NumBits), sizeof(NumBits));
     }
 };
@@ -400,7 +401,7 @@ public:
     uint16_t NumBits;
 
     /** Constructor, serializing members from passed in stream. */
-    TokenMustBeMappedGuids(std::ifstream& BinaryStream) {
+    TokenMustBeMappedGuids(BufferStream& BinaryStream) {
         BinaryStream.read(reinterpret_cast<char*>(&NumGuids), sizeof(NumGuids));
         BinaryStream.read(reinterpret_cast<char*>(&NumBits), sizeof(NumBits));
     }
@@ -414,7 +415,7 @@ public:
     uint16_t NumBits;
 
     /** Constructor, serializing members from passed in stream. */
-    TokenBeginContentBlock(std::ifstream& BinaryStream) {
+    TokenBeginContentBlock(BufferStream& BinaryStream) {
         ObjectNameIndex = TokenHelper::LoadPackedInt(BinaryStream);
         BinaryStream.read(reinterpret_cast<char*>(&NumBits), sizeof(NumBits));
     }
@@ -428,7 +429,7 @@ public:
     uint16_t NumBits;
 
     /** Constructor, serializing members from passed in stream. */
-    TokenEndContentBlock(std::ifstream& BinaryStream) {
+    TokenEndContentBlock(BufferStream& BinaryStream) {
         ObjectNameIndex = TokenHelper::LoadPackedInt(BinaryStream);
         BinaryStream.read(reinterpret_cast<char*>(&NumBits), sizeof(NumBits));
     }
@@ -440,7 +441,7 @@ public:
     uint16_t NumBits;
 
     /** Constructor, serializing members from passed in stream. */
-    TokenWritePropertyHandle(std::ifstream& BinaryStream) {
+    TokenWritePropertyHandle(BufferStream& BinaryStream) {
         BinaryStream.read(reinterpret_cast<char*>(&NumBits), sizeof(NumBits));
     }
 };
@@ -451,7 +452,7 @@ public:
     int32_t AddressIndex;
 
     /** Constructor, serializing members from passed in stream. */
-    TokenConnectionChanged(std::ifstream& BinaryStream) {
+    TokenConnectionChanged(BufferStream& BinaryStream) {
         AddressIndex = TokenHelper::LoadPackedInt(BinaryStream);
     }
 };
@@ -462,7 +463,7 @@ public:
     std::string Name;
 
     /** Constructor, serializing members from passed in stream. */
-    TokenNameReference(std::ifstream& BinaryStream) {
+    TokenNameReference(BufferStream& BinaryStream) {
         uint32_t Length;
         BinaryStream.read(reinterpret_cast<char*>(&Length), sizeof(Length));
         Name.resize(Length);
@@ -476,7 +477,7 @@ public:
     uint64_t Address;
 
     /** Constructor, serializing members from passed in stream. */
-    TokenConnectionReference(std::ifstream& BinaryStream) {
+    TokenConnectionReference(BufferStream& BinaryStream) {
         BinaryStream.read(reinterpret_cast<char*>(&Address), sizeof(Address));
     }
 };
@@ -487,7 +488,7 @@ public:
     std::string Address;
 
     /** Constructor, serializing members from passed in stream. */
-    TokenConnectionStringReference(std::ifstream& BinaryStream) {
+    TokenConnectionStringReference(BufferStream& BinaryStream) {
         int32_t StrLength;
         BinaryStream.read(reinterpret_cast<char*>(&StrLength), sizeof(StrLength));
         StrLength = std::abs(StrLength);
@@ -504,7 +505,7 @@ public:
     int EventDescriptionNameIndex;
 
     /** Constructor, serializing members from passed in stream. */
-    TokenEvent(std::ifstream& BinaryStream) {
+    TokenEvent(BufferStream& BinaryStream) {
         EventNameNameIndex = TokenHelper::LoadPackedInt(BinaryStream);
         EventDescriptionNameIndex = TokenHelper::LoadPackedInt(BinaryStream);
     }
@@ -516,7 +517,7 @@ public:
     std::vector<uint8_t> RawData;
 
     /** Constructor, serializing members from passed in stream. */
-    TokenRawSocketData(std::ifstream& BinaryStream) {
+    TokenRawSocketData(BufferStream& BinaryStream) {
         uint16_t Size;
         BinaryStream.read(reinterpret_cast<char*>(&Size), sizeof(Size));
         RawData.resize(Size);
@@ -530,7 +531,7 @@ public:
     uint16_t NumBits;
 
     /** Constructor, serializing members from passed in stream. */
-    TokenSendAck(std::ifstream& BinaryStream) {
+    TokenSendAck(BufferStream& BinaryStream) {
         BinaryStream.read(reinterpret_cast<char*>(&NumBits), sizeof(NumBits));
     }
 };
@@ -553,7 +554,7 @@ public:
 
     TokenPropertyComparison() = default;
 
-    TokenPropertyComparison(std::ifstream& BinaryStream) {
+    TokenPropertyComparison(BufferStream& BinaryStream) {
         ObjectNameIndex = TokenHelper::LoadPackedInt(BinaryStream);
         BinaryStream.read(reinterpret_cast<char*>(&TimeSpentComparing), sizeof(TimeSpentComparing));
         TokenHelper::ReadBitArray(BinaryStream, ComparedProperties);
@@ -590,7 +591,7 @@ public:
      */
     std::bitset<32> FilteredProperties;
 
-    TokenReplicatePropertiesMetaData(std::ifstream& BinaryStream) {
+    TokenReplicatePropertiesMetaData(BufferStream& BinaryStream) {
         ObjectNameIndex = TokenHelper::LoadPackedInt(BinaryStream);
 
         uint8_t Flags;

@@ -10,6 +10,7 @@
 #include "network_stream.h"
 #include "tokens.h"
 #include "partial_network_stream.h"
+#include "buffer_stream.h"
 
 class StreamParser {
 public:
@@ -51,7 +52,7 @@ public:
         last_property_headers.clear();
     }
 
-    static NetworkStream Parse(std::ifstream& parserStream) {
+    static NetworkStream Parse(BufferStream& parserStream) {
         Reset();
 
 //        std::cout<<"tellg:"<<parserStream.tellg()<<std::endl;
@@ -89,7 +90,7 @@ public:
 //            std::cout<<"while loop tellg:"<<parserStream.tellg()<<std::endl;
 
             //如果已经读取到文件末尾，就不再读取
-            if (parserStream.peek()==EOF) {
+            if (parserStream.eof()) {
                 break;
             }
 

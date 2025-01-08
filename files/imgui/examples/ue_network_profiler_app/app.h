@@ -18,9 +18,10 @@
 #include <string>
 #include <vector>
 #include "GLFW/glfw3.h"
+#include "network_stream.h"
 #ifndef __EMSCRIPTEN__
 #include "imgui-filebrowser/imfilebrowser.h"
-#include "network_stream.h"
+#include "buffer_stream.h"
 
 #endif
 
@@ -31,7 +32,7 @@ public:
     void ResetData();
     void CollectData(int selected_connection_index);
     void ParseLogFile(const std::string& file_path);
-    void ParseNProf(const std::string& file_path);
+    void ParseNProf(BufferStream& file_stream);
     void ParseLogLines(const std::vector<std::string>& lines);
 private:
 #ifndef __EMSCRIPTEN__

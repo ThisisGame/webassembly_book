@@ -5,7 +5,7 @@
 #include "tokens.h"
 #include "stream_parser.h"
 
-TokenBase* TokenBase::ReadNextToken(std::ifstream& BinaryStream, NetworkStream& InNetworkStream) {
+TokenBase* TokenBase::ReadNextToken(BufferStream& BinaryStream, NetworkStream& InNetworkStream) {
     TokenBase* SerializedToken = nullptr;
     ETokenTypes TokenType;
 

@@ -13,6 +13,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include "buffer_stream.h"
 
 class StreamHeader {
 public:
@@ -25,7 +26,7 @@ public:
     std::string GameName;
     std::string URL;
 
-    static StreamHeader ReadHeader(std::ifstream& ParserStream) {
+    static StreamHeader ReadHeader(BufferStream& ParserStream) {
         StreamHeader Header;
 
 //        std::cout<<"tellg:"<<ParserStream.tellg()<<std::endl;
@@ -65,7 +66,7 @@ public:
 
     StreamHeader() = default;
 
-    StreamHeader(std::ifstream& BinaryStream) {
+    StreamHeader(BufferStream& BinaryStream) {
         BinaryStream.read(reinterpret_cast<char*>(&Magic), sizeof(Magic));
         if (Magic != ExpectedMagic) {
             return;
@@ -82,7 +83,7 @@ public:
     }
 
 private:
-    static std::string SerializeAnsiString(std::ifstream& BinaryStream) {
+    static std::string SerializeAnsiString(BufferStream& BinaryStream) {
         uint32_t SerializedLength;
         BinaryStream.read(reinterpret_cast<char*>(&SerializedLength), sizeof(SerializedLength));
         std::vector<char> buffer(SerializedLength);

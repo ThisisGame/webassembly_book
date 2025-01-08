@@ -60,24 +60,11 @@ extern "C" {
             return;
         }
 
-        // data是一个文本，以'\n'分割
-        std::string str((const char*)data, length);
-        std::vector<std::string> lines;
-        std::string::size_type pos1, pos2;
-        pos2 = str.find('\n');
-        pos1 = 0;
-        while(std::string::npos != pos2) {
-            lines.push_back(str.substr(pos1, pos2-pos1));
-
-            pos1 = pos2 + 1;
-            pos2 = str.find('\n', pos1);
-        }
-        if(pos1 != str.length()) {
-            lines.push_back(str.substr(pos1));
-        }
-
-        //解析每一行
-        App::GetInstance()->ParseLogLines(lines);
+        // Create a file stream from the data
+        std::cout << "convert download data to ifstream 1" << " bytes\n";
+        BufferStream stream((char*)data, length);
+        App::GetInstance()->ParseNProf(stream);
+        std::cout << "convert download data to ifstream 4" << " bytes\n";
     }
 }
 #endif
@@ -273,6 +260,11 @@ void App::CollectData(int selected_connection_index) {
                     min_queued_bits=queued_bits;
                 }
 
+                //如果min_queued_bits>0，那么说明网络一直拥堵，将min_queued_bits设置为0，确保柱形图以实际的数值表示，而不是将最小值作为0值开始显示。
+                if(min_queued_bits>0){
+                    min_queued_bits=0;
+                }
+
                 std::string head_str;
                 head_str+="queued_bits:"+std::to_string(queued_bits) + "\n";
                 head_str+="-----------------------------\n";
@@ -357,13 +349,6 @@ void App::ResetData() {
 }
 
 void App::ParseLogFile(const std::string &file_path) {
-    ResetData();
-
-    std::ifstream file(file_path);
-    ParseNProf(file_path);
-}
-
-void App::ParseNProf(const std::string &file_path) {
     std::ifstream file(file_path, std::ios::binary);
     if (!file.is_open()) {
         std::cerr << "Failed to open file: " << file_path << std::endl;
@@ -374,10 +359,15 @@ void App::ParseNProf(const std::string &file_path) {
     std::cout<<"file size:"<<file.tellg()<<std::endl;
     file.seekg(0, std::ios::beg);
 
-    //输出当前读取位置
-//    std::cout<<"tellg:"<<file.tellg()<<std::endl;
+    BufferStream buffer_stream(file);
+    ParseNProf(buffer_stream);
+}
 
-    network_stream_ = StreamParser::Parse(file);
+void App::ParseNProf(BufferStream& file_stream) {
+
+    ResetData();
+
+    network_stream_ = StreamParser::Parse(file_stream);
 }
 
 App *App::GetInstance() {
