@@ -118,7 +118,6 @@ public:
                 } else {
                     TokenConnectionStringReference* tokenConnectionStringReference = static_cast<TokenConnectionStringReference*>(token);
                     networkStream.StringAddressArray.push_back(tokenConnectionStringReference->Address);
-                    networkStream.ConnectionPlayerNameMap[tokenConnectionStringReference->ConnectionIndex] = tokenConnectionStringReference->Address;
                 }
                 continue;
             }
@@ -209,8 +208,9 @@ public:
                 TokenEvent* tokenEvent = static_cast<TokenEvent*>(token);
                 std::string eventName = networkStream.GetName(tokenEvent->EventNameNameIndex);
                 if(eventName == "JOIN"){
-                    std::string playerName = networkStream.GetName(tokenEvent->EventDescriptionNameIndex);
-                    networkStream.ConnectionPlayerNameMap[tokenEvent->ConnectionIndex] = playerName;
+//                    std::string playerName = networkStream.GetName(tokenEvent->EventDescriptionNameIndex);//UE写入时不支持中文，解析出来全是乱码，先不使用。
+                    std::string player_name = networkStream.StringAddressArray[tokenEvent->ConnectionIndex];
+                    networkStream.ConnectionPlayerNameMap[tokenEvent->ConnectionIndex] = player_name;
                 }
             }
         }

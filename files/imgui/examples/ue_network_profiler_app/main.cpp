@@ -126,8 +126,8 @@ int main(int, char**)
 
     // Load Fonts
     printf("Loading fonts...\n");
-    io.Fonts->AddFontFromFileTTF("fonts/msyh.ttf", 20.0f, NULL, io.Fonts->GetGlyphRangesChineseFull());
-//    io.Fonts->AddFontFromFileTTF("fonts/JetBrainsMonoNL-Light.ttf", 20.0f);
+//    io.Fonts->AddFontFromFileTTF("fonts/msyh.ttf", 20.0f, NULL, io.Fonts->GetGlyphRangesChineseFull());
+    io.Fonts->AddFontFromFileTTF("fonts/JetBrainsMonoNL-Light.ttf", 20.0f);
 //    io.Fonts->AddFontFromFileTTF("fonts/hkyuan.ttf", 20.0f);
     io.Fonts->Build();
     printf("Loaded fonts\n");

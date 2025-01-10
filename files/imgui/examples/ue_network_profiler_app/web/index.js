@@ -35,7 +35,7 @@ if (ENVIRONMENT_IS_NODE) {
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-// include: C:\Users\CAPTAI~1\AppData\Local\Temp\tmp0jzfg11w.js
+// include: C:\Users\CAPTAI~1\AppData\Local\Temp\tmpbsquek9z.js
 
   Module['expectedDataFileDownloads'] ??= 0;
   Module['expectedDataFileDownloads']++;
@@ -212,25 +212,25 @@ Module['FS_createPath']("/", "fonts", true, true);
     }
 
     }
-    loadPackage({"files": [{"filename": "/fonts/Cousine-Regular.ttf", "start": 0, "end": 43912}, {"filename": "/fonts/DroidSans.ttf", "start": 43912, "end": 233956}, {"filename": "/fonts/JetBrainsMonoNL-Light.ttf", "start": 233956, "end": 444796}, {"filename": "/fonts/Karla-Regular.ttf", "start": 444796, "end": 461644}, {"filename": "/fonts/ProggyClean.ttf", "start": 461644, "end": 502852}, {"filename": "/fonts/ProggyTiny.ttf", "start": 502852, "end": 538508}, {"filename": "/fonts/Roboto-Medium.ttf", "start": 538508, "end": 701096}, {"filename": "/fonts/binary_to_compressed_c.cpp", "start": 701096, "end": 717273}, {"filename": "/fonts/xkcd-script.ttf", "start": 717273, "end": 770037}], "remote_package_size": 770037});
+    loadPackage({"files": [{"filename": "/fonts/Cousine-Regular.ttf", "start": 0, "end": 43912}, {"filename": "/fonts/DroidSans.ttf", "start": 43912, "end": 233956}, {"filename": "/fonts/JetBrainsMonoNL-Light.ttf", "start": 233956, "end": 444796}, {"filename": "/fonts/Karla-Regular.ttf", "start": 444796, "end": 461644}, {"filename": "/fonts/ProggyClean.ttf", "start": 461644, "end": 502852}, {"filename": "/fonts/ProggyTiny.ttf", "start": 502852, "end": 538508}, {"filename": "/fonts/Roboto-Medium.ttf", "start": 538508, "end": 701096}, {"filename": "/fonts/binary_to_compressed_c.cpp", "start": 701096, "end": 717273}, {"filename": "/fonts/hkyuan.ttf", "start": 717273, "end": 872573}, {"filename": "/fonts/msyh.ttf", "start": 872573, "end": 15916157}, {"filename": "/fonts/xkcd-script.ttf", "start": 15916157, "end": 15968921}], "remote_package_size": 15968921});
 
   })();
 
-// end include: C:\Users\CAPTAI~1\AppData\Local\Temp\tmp0jzfg11w.js
-// include: C:\Users\CAPTAI~1\AppData\Local\Temp\tmpiul36voz.js
+// end include: C:\Users\CAPTAI~1\AppData\Local\Temp\tmpbsquek9z.js
+// include: C:\Users\CAPTAI~1\AppData\Local\Temp\tmpn87fgjyv.js
 
     // All the pre-js content up to here must remain later on, we need to run
     // it.
     if (Module['$ww'] || (typeof ENVIRONMENT_IS_PTHREAD != 'undefined' && ENVIRONMENT_IS_PTHREAD)) Module['preRun'] = [];
     var necessaryPreJSTasks = Module['preRun'].slice();
-  // end include: C:\Users\CAPTAI~1\AppData\Local\Temp\tmpiul36voz.js
-// include: C:\Users\CAPTAI~1\AppData\Local\Temp\tmpbob9ijbd.js
+  // end include: C:\Users\CAPTAI~1\AppData\Local\Temp\tmpn87fgjyv.js
+// include: C:\Users\CAPTAI~1\AppData\Local\Temp\tmpqml4yupj.js
 
     if (!Module['preRun']) throw 'Module.preRun should exist because file support used it; did a pre-js delete it?';
     necessaryPreJSTasks.forEach((task) => {
       if (Module['preRun'].indexOf(task) < 0) throw 'All preRun tasks that exist before user pre-js code should remain after; did you replace Module or modify Module.preRun?';
     });
-  // end include: C:\Users\CAPTAI~1\AppData\Local\Temp\tmpbob9ijbd.js
+  // end include: C:\Users\CAPTAI~1\AppData\Local\Temp\tmpqml4yupj.js
 
 
 // Sometimes an existing Module object exists with properties
@@ -1110,7 +1110,7 @@ function dbg(...args) {
 // === Body ===
 
 var ASM_CONSTS = {
-  1073926102: ($0) => { downloadFile(UTF8ToString($0)); }
+  1073926086: ($0) => { downloadFile(UTF8ToString($0)); }
 };
 function canvas_get_width() { return Module.canvas.width; }
 function canvas_get_height() { return Module.canvas.height; }
@@ -8483,6 +8483,7 @@ var _malloc = createExportWrapper('malloc', 1);
 var _free = createExportWrapper('free', 1);
 var ___funcs_on_exit = createExportWrapper('__funcs_on_exit', 0);
 var _strerror = createExportWrapper('strerror', 1);
+var _setThrew = createExportWrapper('setThrew', 2);
 var _emscripten_stack_init = () => (_emscripten_stack_init = wasmExports['emscripten_stack_init'])();
 var _emscripten_stack_get_free = () => (_emscripten_stack_get_free = wasmExports['emscripten_stack_get_free'])();
 var _emscripten_stack_get_base = () => (_emscripten_stack_get_base = wasmExports['emscripten_stack_get_base'])();

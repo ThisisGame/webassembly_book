@@ -135,12 +135,12 @@ void App::Update(int window_width, int window_height) {
             ImGui::End();
 
             //显示Connection列表
-            if(network_stream_.ConnectionPlayerNameMap.size()>0) {
+            if(network_stream_.StringAddressArray.size()>0) {
                 static int selected_connection_index = 0;
-                if(ImGui::BeginCombo("Connection",network_stream_.ConnectionPlayerNameMap[selected_connection_index].c_str())) {
-                    for(int i=0;i<network_stream_.ConnectionPlayerNameMap.size();i++) {
+                if(ImGui::BeginCombo("Connection",network_stream_.StringAddressArray[selected_connection_index].c_str())) {
+                    for(int i=0;i<network_stream_.StringAddressArray.size();i++) {
                         bool is_selected=(selected_connection_index==i);
-                        if(ImGui::Selectable(network_stream_.ConnectionPlayerNameMap[i].c_str(),is_selected)) {
+                        if(ImGui::Selectable(network_stream_.StringAddressArray[i].c_str(),is_selected)) {
                             selected_connection_index=i;
                             ResetData();
                         }
@@ -154,8 +154,9 @@ void App::Update(int window_width, int window_height) {
                 //构造QueuedBits数据
                 CollectData(selected_connection_index);
 
-                //创建Frame窗口
-                ImGui::BeginChild("#profile window",ImVec2(0, 125*4),true,ImGuiWindowFlags_AlwaysHorizontalScrollbar);
+                //创建Connection下拉框
+                const char* connection_name=network_stream_.StringAddressArray[selected_connection_index].c_str();
+                ImGui::BeginChild(connection_name,ImVec2(0, 125*4),true,ImGuiWindowFlags_AlwaysHorizontalScrollbar);
                 {
                     static float queued_bits_middle_value=0.f;
                     ImGui::SliderFloat("middle value", &queued_bits_middle_value, min_queued_bits, max_queued_bits);
