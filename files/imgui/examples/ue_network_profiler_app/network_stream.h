@@ -40,6 +40,9 @@ public:
     /** Used for new storage method. */
     std::vector<std::string> StringAddressArray;
 
+    //Connection对应的PlayerName
+    std::unordered_map<int,std::string> ConnectionPlayerNameMap;
+
     /** Last address index parsed from token stream */
     int CurrentConnectionIndex = 0;
 

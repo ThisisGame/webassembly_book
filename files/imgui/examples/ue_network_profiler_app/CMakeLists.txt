@@ -10,6 +10,7 @@ endif ()
 
 include(CMakeLists.txt.glfw)
 include(CMakeLists.txt.imgui)
+include(CMakeLists.txt.FreeType)
 
 #拷贝data文件
 file(COPY "../../misc/fonts/" DESTINATION "./fonts/")
@@ -18,11 +19,13 @@ file(COPY "../../misc/fonts/" DESTINATION "./fonts/")
 include_directories("./")
 include_directories("../../misc/depends/")
 
+file(GLOB imgui_freetype_cpp ../../misc/freetype/*.cpp)
+
 #这里使用GLOB_RECURSE会遍历子文件夹导致包含了cmake-build-debug\CMakeFiles\3.27.8\CompilerIdCXX\CMakeCXXCompilerId.cpp，导致main函数重复定义。
 # file(GLOB_RECURSE example_cpp ./*.cpp)
 file(GLOB example_cpp ./*.cpp)
 
-add_executable(${PROJECT_NAME} ${glfw_sources} ${imgui_src} ${example_cpp})
+add_executable(${PROJECT_NAME} ${glfw_sources} ${imgui_src} ${freetype_src} ${imgui_freetype_cpp} ${example_cpp})
 
 if (MSVC)
     set_property(TARGET ${PROJECT_NAME} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")

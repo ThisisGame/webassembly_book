@@ -21,6 +21,105 @@
 
 ![](../../imgs/imgui/free_type/imconfig.jpg)
 
+<font color=red>注意：</font> 有些ttf字体文件加载进来会崩溃，可能是因为不支持AutoHint。
+
+修改`ftobjs.c`，强制设置False。
+
+```c++
+FT_EXPORT_DEF( FT_Error )
+FT_Load_Glyph( FT_Face   face,
+                FT_UInt   glyph_index,
+                FT_Int32  load_flags )
+{
+
+......
+
+      autohint = FALSE;//强制设置为False
+
+    if ( autohint )
+    {
+      FT_AutoHinter_Interface  hinting;
+
+      ......
+    }
+    ......
+  }
+```
+
+在出现崩溃之前，在Load字体文件时，其实就有一些错误了，只是没有提示出来。
+
+```c++
+///file:ttpload.c
+
+/**************************************************************************
+   *
+   * @Function:
+   *   tt_face_load_prep
+   *
+   * @Description:
+   *   Load the cvt program.
+   *
+   * @InOut:
+   *   face ::
+   *     A handle to the target face object.
+   *
+   * @Input:
+   *   stream ::
+   *     A handle to the input stream.
+   *
+   * @Return:
+   *   FreeType error code.  0 means success.
+   */
+  FT_LOCAL_DEF( FT_Error )
+  tt_face_load_prep( TT_Face    face,
+                     FT_Stream  stream )
+  {
+#ifdef TT_USE_BYTECODE_INTERPRETER
+
+    FT_Error  error;
+    FT_ULong  table_len;
+
+
+    FT_TRACE2(( "Prep program " ));
+
+    error = face->goto_table( face, TTAG_prep, stream, &table_len ); //有问题的字体会返回error
+    if ( error )
+    {
+      face->cvt_program      = NULL;
+      face->cvt_program_size = 0;
+      error                  = FT_Err_Ok;
+
+      FT_TRACE2(( "is missing\n" ));
+    }
+    else
+    {
+      face->cvt_program_size = table_len;
+      if ( FT_FRAME_EXTRACT( table_len, face->cvt_program ) )
+        goto Exit;
+
+      FT_TRACE2(( "loaded, %12ld bytes\n", face->cvt_program_size ));
+    }
+
+  Exit:
+    return error;
+
+#else /* !TT_USE_BYTECODE_INTERPRETER */
+
+    FT_UNUSED( face   );
+    FT_UNUSED( stream );
+
+    return FT_Err_Ok;
+
+#endif
+  }
+```
+
+错误日志没有输出，可以在`CMakeLists.txt.FreeType`中开启。
+
+```CMake
+add_definitions(-D FT_DEBUG_LEVEL_TRACE)
+```
+
 ### 3. 修改编译规则
 
 修改`files\imgui\examples\example_glfw_wgpu\Makefile.emscripten`，引入`imgui_freetype`

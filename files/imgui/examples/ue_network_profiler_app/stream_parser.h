@@ -113,9 +113,12 @@ public:
 
             if (token->GetTokenType() == ETokenTypes::ConnectionReference) {
                 if (networkStream.GetVersion() < 12) {
-                    networkStream.AddressArray.push_back(static_cast<TokenConnectionReference*>(token)->Address);
+                    TokenConnectionReference* tokenConnectionReference = static_cast<TokenConnectionReference*>(token);
+                    networkStream.AddressArray.push_back(tokenConnectionReference->Address);
                 } else {
-                    networkStream.StringAddressArray.push_back(static_cast<TokenConnectionStringReference*>(token)->Address);
+                    TokenConnectionStringReference* tokenConnectionStringReference = static_cast<TokenConnectionStringReference*>(token);
+                    networkStream.StringAddressArray.push_back(tokenConnectionStringReference->Address);
+                    networkStream.ConnectionPlayerNameMap[tokenConnectionStringReference->ConnectionIndex] = tokenConnectionStringReference->Address;
                 }
                 continue;
             }
@@ -199,6 +202,15 @@ public:
                     }
                 } else {
                     currentFrameTokens.push_back(token);
+                }
+            }
+
+            if(token->GetTokenType() == ETokenTypes::Event){
+                TokenEvent* tokenEvent = static_cast<TokenEvent*>(token);
+                std::string eventName = networkStream.GetName(tokenEvent->EventNameNameIndex);
+                if(eventName == "JOIN"){
+                    std::string playerName = networkStream.GetName(tokenEvent->EventDescriptionNameIndex);
+                    networkStream.ConnectionPlayerNameMap[tokenEvent->ConnectionIndex] = playerName;
                 }
             }
         }

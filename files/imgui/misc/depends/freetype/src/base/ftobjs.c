@@ -942,6 +942,8 @@
       }
     }
 
+//      autohint = FALSE;//有些字体会崩溃，可以强制设置为FALSE。
+
     if ( autohint )
     {
       FT_AutoHinter_Interface  hinting;
